@@ -85,7 +85,7 @@ fit_result = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{});
 % T2s = X(4*[0:general_opts.num_components-1] + 2);
 % [~,IT2s] = sort(T2s);
 for n = 1:general_opts.num_components
-%    In = 4*(IT2s(n)-1);
+    %    In = 4*(IT2s(n)-1);
     In = 4*(n-1);
     fit_result(n).rho = X(In + 1)*Snorm;
     fit_result(n).T2 = X(In + 2);
@@ -109,22 +109,22 @@ if general_opts.plot_flag==1
     Sfit_TE = utebrain_signal_model(X, general_opts.num_components, TE);
     figure
     if general_opts.complex_fit
-%     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
-%     subplot(212)
-     subplot(311)
-    plot(TE,real(S),'b+',TEfit,real(Sfit/Snorm), 'b--')
-    subplot(312)
+        %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
+        %     subplot(212)
+        subplot(311)
+        plot(TE,real(S),'b+',TEfit,real(Sfit/Snorm), 'b--')
+        subplot(312)
         plot(TE,imag(S),'g+',TEfit,imag(Sfit/Snorm), 'g--')
-     subplot(313)
-     Sresidual = S(:) - Sfit_TE(:);
-    plot(TE,real(Sresidual),'b', TE, imag(Sresidual), 'g')
-
+        subplot(313)
+        Sresidual = S(:) - Sfit_TE(:);
+        plot(TE,real(Sresidual),'b', TE, imag(Sresidual), 'g')
+        
     else
-     subplot(211)
-      plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
-      subplot(212)
-    plot(TE,abs(S(:)) - abs(Sfit_TE(:)))
-     
+        subplot(211)
+        plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
+        subplot(212)
+        plot(TE,abs(S(:)) - abs(Sfit_TE(:)))
+        
     end
     
 end
