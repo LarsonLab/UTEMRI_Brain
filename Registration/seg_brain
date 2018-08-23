@@ -1,0 +1,23 @@
+# first arg is data dir, second arg is -t1 for T1, -t2 for T2
+
+#!/bin/tcsh
+
+mkdir ./SEG
+rm ./SEG/*
+
+# convert source DICOM to NIFTI-1
+dcm2nii -o SEG  $argv[1]
+
+rm ./SEG/co* 
+rm ./SEG/o*
+set data = `ls -1 ./SEG/*.nii.gz`
+mv $data[1] ./SEG/data.nii.gz
+
+echo "run bet"
+cd ./SEG
+/netopt/rhel7/fsl/bin/bet data.nii.gz bet_data -f 0.3 -g 0 -m
+
+echo "run fast" 
+fast $argv[2] -n 3 -H 0.1 -I 4 -l 20.0 -o ./fast_data ./bet_data
+
+# flirt [options] -in <inputvol> -ref <refvol> -out <outputvol>
