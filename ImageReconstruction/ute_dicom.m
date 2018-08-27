@@ -19,10 +19,11 @@ addpath(genpath('../util'));
 Isize = size(finalImage);
 
 pfile = GERecon('Pfile.Load', pfile_name);
-pfile.phases = numel(finalImage(1,1,1,1,1,1,:));
+pfile.phases = numel(finalImage(1,1,1,1,:));
 pfile.xRes = size(finalImage,1);
 pfile.yRes = size(finalImage,2);
 pfile.slices = size(finalImage,3);
+pfile.echoes = size(finalImage,4);
 
 % calc real res(isotropic,axial)
 corners = GERecon('Pfile.Corners', 1);
@@ -36,13 +37,13 @@ for s = 1:pfile.slices
     
     for e = 1:pfile.echoes
         for p = 1:pfile.phases
-            mag_t = flip(flip(single(abs(finalImage(:,:,s,1,1,e,p))*32000).',1),2);
+            mag_t = flip(flip(single(abs(finalImage(:,:,s,e,p))*32000).',1),2);
             %mag_t = GERecon('Orient', mag_t, orientation);
             imageNumber = ImageNumber(s, e, p, pfile);
             filename = [output_dir,'DICOMS/image_',num2str(imageNumber) '.dcm'];
             GERecon('Dicom.Write', filename, mag_t, imageNumber, orientation, corners);
             if image_option~=0
-                phase_t = flip(flip(single(angle(finalImage(:,:,s,1,1,e,p))).',1),2);
+                phase_t = flip(flip(single(angle(finalImage(:,:,s,e,p))).',1),2);
                 %phase_t = GERecon('Orient', phase_t, orientation);
                 filename = [output_dir,'DICOMS/phase_',num2str(imageNumber) '.dcm'];
                 GERecon('Dicom.Write', filename, phase_t, imageNumber, orientation, corners);
