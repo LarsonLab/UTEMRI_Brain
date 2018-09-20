@@ -10,22 +10,35 @@ for i = 1:numel(fields)
 
     switch i
         case 1 %uT2_corrected
-            scaleFactor = 1000;%intensiteis inconsistent
+            scaleFactor = 1000;
         case 2 %uT2_fraction
-            scaleFactor = 1000;%intensiteis inconsistent
+            scaleFactor = 1000;
         case 3 %uT2_T2
-            scaleFactor = 1000;% bg gray
+            scaleFactor = 100;
         case 4 %uT2_df
-            scaleFactor = 1000;% bg gray
+            scaleFactor = 10;
         case 5 %lT2_T2
-            scaleFactor = 1000;% bg gray
+            scaleFactor = 100; 
         case 6 %fieldmap
-            scaleFactor = 100;%!!!
+            scaleFactor = 10;
         case 7 %AIC
-            scaleFactor = 100;%!!!
+            scaleFactor = 10;
     end
     
-    ute_dicom(fit_maps.(fieldName), pfile_name, fieldName, 0, scaleFactor);
+    map = fit_maps.(fieldName);
+    
+%     x = map(find(map));
+%     figure;histogram(x);
+
+    % find minimum pixel value, and set backgound = px_min
+    % otherwise background in DICOM will look gray
+    px_min = min(map(map~=-inf));
+    px_max = max(map(map~=+inf));
+    map(map==-inf) = px_min;
+    
+    ute_dicom(map, pfile_name, fieldName, 0, scaleFactor);
+
+    
     
 
 end
