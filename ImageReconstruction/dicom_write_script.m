@@ -2,13 +2,12 @@
 
 %% load data
 
-% choose directory
-addpath(genpath('../UTE_Brain/'));
+addpath(genpath('../'));
 
-pfile_name = './P26112.7';
+pfile_name = '../../test_data/P26112.7';
 
-fit_filename = './fit_results_plus.mat';
-fit_plus_filename = './fit_results.mat'; 
+fit_filename = '../../test_data/fit_results.mat';
+fit_plus_filename = '../../test_data/fit_results_plus.mat'; 
 AIC_thresh = -145;
 im_biasfield = [];
 
