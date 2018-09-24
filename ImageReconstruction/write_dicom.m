@@ -25,6 +25,8 @@ for i = 1:numel(fields)
             scaleFactor = 10;
     end
     
+    seriesNumber = i * 1000;
+    
     map = fit_maps.(fieldName);
     
 %     x = map(find(map));
@@ -36,7 +38,7 @@ for i = 1:numel(fields)
     px_max = max(map(map~=+inf));
     map(map==-inf) = px_min;
     
-    ute_dicom(map, pfile_name, fieldName, 0, scaleFactor);
+    ute_dicom(map, pfile_name, fieldName, 0, scaleFactor, seriesNumber);
 
     
     

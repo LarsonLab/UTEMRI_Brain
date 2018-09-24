@@ -1,4 +1,4 @@
-function ute_dicom(finalImage, pfile_name, output_image, image_option, scaleFactor)
+function ute_dicom(finalImage, pfile_name, output_image, image_option, scaleFactor, seriesNumber)
 % Convert matlab 3D matrix to dicom for UWUTE sequence
 % resolution is fixed in the recon - FOV/readout(from scanner), isotropic
 % matrix size is determined in the recon
@@ -40,7 +40,6 @@ orientation = GERecon('Pfile.Orientation', 1);
 X = zeros(96, 86, 1, 94);
 
 
-seriesNumber = randi(99999);
 seriesDescription = ['UTE T2 - ', output_image];
 
 for s = 1:pfile.slices
@@ -54,7 +53,7 @@ for s = 1:pfile.slices
 %             mag_t = GERecon('Orient', mag_t, orientation);
 
             imageNumber = ImageNumber(s, e, p, pfile);
-            filename = ['DICOMS/',output_image, '/image_',num2str(imageNumber) '.dcm'];
+            filename = ['DICOMs_' output_image, '/image_',num2str(imageNumber) '.dcm'];
             GERecon('Dicom.Write', filename, mag_t, imageNumber, orientation, corners, seriesNumber, seriesDescription);
             if image_option~=0
                 phase_t = flip(flip(single(angle(finalImage(:,:,s,e,p))).',1),2);
