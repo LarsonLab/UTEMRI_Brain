@@ -1,4 +1,4 @@
-function write_dicom(fit_maps, pfile_name)
+function write_dicom(fit_maps, pfile_name, im_ute)
 % generate DICOM images from fit_maps
 
 
@@ -40,10 +40,13 @@ for i = 1:numel(fields)
     
     ute_dicom(map, pfile_name, fieldName, 0, scaleFactor, seriesNumber);
 
-    
-    
-
+   
 end
 
+
+im_ute = abs(im_ute(:)); % calculate magnitude from complex number
+
+% 
+ute_dicom(im_ute, pfile_name, 'UTE', 0, 1000, 0000);
 
 end
