@@ -36,6 +36,16 @@ corners.UpperLeft = corners.UpperLeft.*scale;
 corners.UpperRight = corners.UpperRight.*scale;
 orientation = GERecon('Pfile.Orientation', 1);
 
+    % NEED TO CONFIRM orientation/corners based on slice number
+    % HERE IS HOW this is done without the "corners" adjustment shown
+    % above:
+    %                 sliceInfo.pass = 1;
+    %                sliceInfo.sliceInPass = s;
+    %      info = GERecon('Pfile.Info', sliceInfo);
+    % orientation = info.Orientation;  corners = info.Corners;
+
+
+
 %  X = repmat(int16(0), [96 86 1 94]);
 X = zeros(96, 86, 1, 94);
 
@@ -43,6 +53,7 @@ X = zeros(96, 86, 1, 94);
 seriesDescription = ['UTE T2 - ', output_image];
 
 for s = 1:pfile.slices
+    
     
     for e = 1:pfile.echoes
         for p = 1:pfile.phases
@@ -66,7 +77,7 @@ for s = 1:pfile.slices
         end
     end
     
-    % Get corners and orientation for this slice location
+    % Get corners and orientation for next slice location?
     corners.LowerLeft(3) = corners.LowerLeft(3) + res;
     corners.UpperLeft(3) = corners.UpperLeft(3) + res;
     corners.UpperRight(3) = corners.UpperRight(3) + res;

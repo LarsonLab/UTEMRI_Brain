@@ -1,4 +1,4 @@
-function write_dicom(fit_maps, pfile_name, im_ute)
+function write_ute_brain_dicom(fit_maps, pfile_name, im_ute)
 % generate DICOM images from fit_maps
 
 
@@ -47,6 +47,6 @@ end
 im_ute = abs(im_ute(:)); % calculate magnitude from complex number
 
 % 
-ute_dicom(im_ute, pfile_name, 'UTE', 0, 1000, 0000);
+ute_dicom(im_ute, pfile_name, 'UTE', 0, 32767/max(abs(im_ute(:))), 0000);
 
 end
