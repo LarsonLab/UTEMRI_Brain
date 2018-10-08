@@ -22,7 +22,6 @@ else
     %datamask = medfilt3(AIC2 < -230);
     datamask = (AIC2_plus < AIC_thresh);
     %datamask = imgaussfilt3(AIC2_plus, 2) < -250;
-    datamask(~datamask) = -Inf;
 end
 
 for Imaps = 1:7
@@ -37,7 +36,7 @@ for Imaps = 1:7
             case 3
                 dataplot(Ix) = fit_result2_plus(Ix,2).T2; sc = [0 1.0]; root_fname = 'uT2_T2';
             case 4
-                dataplot(Ix) = -fit_result2_plus(Ix,2).df*1e3; sc = [-1100 -600]; root_fname = 'uT2_df';
+                dataplot(Ix) = fit_result2_plus(Ix,2).df*1e3; sc = [-1100 -600]; root_fname = 'uT2_df';
             case 5
                 dataplot(Ix) = fit_result2(Ix,1).T2; sc = [15 30]; root_fname = 'lT2_T2';
             case 6
@@ -61,4 +60,8 @@ for Imaps = 1:7
     fit_maps.(root_fname) = zeros(imsize) - Inf;
     fit_maps.(root_fname)(I) = dataplot .* datamask_temp;
     
+    
+
+    
+
 end
