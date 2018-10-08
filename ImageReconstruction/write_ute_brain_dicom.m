@@ -29,22 +29,14 @@ for i = 1:numel(fields)
     
     map = fit_maps.(fieldName);
     
-%     x = map(find(map));
-%     figure;histogram(x);
-
-    % find minimum pixel value, and set backgound = px_min
-    % otherwise background in DICOM will look gray
-    px_min = min(map(map~=-inf));
-    px_max = max(map(map~=+inf));
-    map(map==-inf) = px_min;
-    
+ 
     ute_dicom(map, pfile_name, fieldName, 0, scaleFactor, seriesNumber);
 
    
 end
 
 
-im_ute = abs(im_ute(:)); % calculate magnitude from complex number
+im_ute = abs(im_ute); % calculate magnitude from complex number
 
 % 
 ute_dicom(im_ute, pfile_name, 'UTE', 0, 32767/max(abs(im_ute(:))), 0000);

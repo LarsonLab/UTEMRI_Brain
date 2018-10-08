@@ -29,7 +29,7 @@ AIC_thresh = -145;
 fit_maps = generate_fit_maps(fit_filename, fit_plus_filename, AIC_thresh, im_biasfield);
 
 % write dicom
-write_dicom(fit_maps, pfile_name,im_ute)
+write_ute_brain_dicom(fit_maps, pfile_name,im_ute)
 
 
 

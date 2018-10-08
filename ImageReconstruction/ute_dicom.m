@@ -45,7 +45,6 @@ orientation = GERecon('Pfile.Orientation', 1);
     % orientation = info.Orientation;  corners = info.Corners;
 
 
-
 %  X = repmat(int16(0), [96 86 1 94]);
 X = zeros(96, 86, 1, 94);
 
@@ -58,7 +57,7 @@ for s = 1:pfile.slices
     for e = 1:pfile.echoes
         for p = 1:pfile.phases
             
-            mag_t =double(finalImage(:,:,s,e,p) * scaleFactor);
+            mag_t =flip(double(finalImage(:,:,s,e,p) * scaleFactor));
 %             figure;imshow(mag_t);title('mag_t');
 
 %             mag_t = GERecon('Orient', mag_t, orientation);
@@ -85,7 +84,7 @@ end
 
 disp([output_image, ' generated.']);
 
-figure;montage(X(:,:,1,:),map);title(output_image);
+% figure;montage(X(:,:,1,:),map);title(output_image);
 
 end
                
