@@ -33,18 +33,10 @@ function [im, header] = precon_3dute_pfile_bartv300_allec(pfile, ...
 % rawheadX_cp (in the src dir) vs. rawheadX
 
 if ~isdeployed
-    %addpath /working/larson/UTE_GRE_shuffling_recon/readpfile/
-    %addpath /home/pcao/src/ute_recon_export/
     addpath /home/pcao/src/bart-0.2.07/matlab/
-    %addpath /home/pcao/src/bart-0.3.00/matlab/
     addpath /home/pcao/src/bart-0.3.01/matlab/
-    %addpath /home/plarson/matlab/utilities/
-    %addpath /home/plarson/matlab/reconstruction/
-    %addpath /home/plarson/matlab/reconstruction/UTE/
-    %addpath /home/plarson/matlab/reconstruction/gridding/
-    %addpath /home/plarson/matlab/trajectories/radial_fovs/
     addpath /home/plarson/matlab/3DUTE-recon
-    addpath /netopt/share/ese/ESE_DV26.0_R01/tools/matlab/read_MR/
+%    addpath /netopt/share/ese/ESE_DV26.0_R01/tools/matlab/read_MR/
 end
 
 disp(pfile)

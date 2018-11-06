@@ -9,8 +9,8 @@ end
 
 % visualization
 load(fit_plus_filename);
-fit_result2_plus = fit_result2;  fit_result3_plus = fit_result3;
-AIC2_plus = AIC2; AIC3_plus = AIC3;
+fit_result2_plus = fit_result2;  %fit_result3_plus = fit_result3;
+AIC2_plus = AIC2; %AIC3_plus = AIC3;
 load(fit_filename);
 
 if nargin < 4 || isempty(im_biasfield)
