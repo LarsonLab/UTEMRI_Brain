@@ -1,10 +1,15 @@
-function plot_fit_maps(fit_maps, im_ute, B0, map_scales, write_flag)
-%plot_fit_maps(fit_maps, im_ute, B0, map_scales,write_flag)
+function map_scales = plot_fit_maps(fit_maps, im_ute, B0, Iplot, write_flag, write_root)
+%plot_fit_maps(fit_maps, im_ute, [B0 or map_scales] ,write_flag)
 
 %%
-
-%
-switch B0
+if nargin > 2 && isstruct(B0)
+    map_scales = B0;
+else
+    map_scales = struct();
+    if  nargin < 3 || isempty(B0)
+        B0 = 3;
+    end
+        switch B0
     case 3
         map_scales.uT2_corrected = [0, .05];
         map_scales.uT2_fraction = [.1 .2];
@@ -24,17 +29,27 @@ switch B0
         map_scales.fieldmap = [-250 250];
         map_scales.AIC = [100 300];
 end
+end
+
+if nargin < 5 || isempty(write_flag)
+    write_flag = 0;
+end
+
 
 
 root_fnames = {'uT2_corrected', 'uT2_fraction', 'uT2_T2', 'uT2_df', 'lT2_T2','fieldmap','AIC'};
 
 imsize = size(fit_maps.(root_fnames{1}));
 Icrop = {[1:imsize(1)], [1:imsize(2)], [1:imsize(3)]};
-Iax = imsize(3)/2; Icor = imsize(1)/2; Isag = imsize(2)/2;
-
+if nargin < 4 || isempty(Iplot)
+    Iax = imsize(3)/2; Icor = imsize(1)/2; Isag = imsize(2)/2;
+else
+    Iax = Iplot(3); Icor = Iplot(1); Isag = Iplot(2);
+end
+    
 for Imaps = 1:length(root_fnames)
     root_fname = root_fnames{Imaps};
-    
+    if isfield(fit_maps, root_fname)
     
     implot = fit_maps.(root_fname)(Icrop{1}, Icrop{2}, Icrop{3});
     
@@ -58,7 +73,8 @@ for Imaps = 1:length(root_fnames)
     % apply mask
     
     if write_flag
-        print(root_fname, '-dpdf')
+        print([write_root, root_fname], '-dpdf')
+    end
     end
 end
 
@@ -74,7 +90,7 @@ if ~isempty(im_ute)
     % apply mask
     
     if write_flag
-        print('im_ute', '-dpdf')
+        print([write_root 'im_ute'], '-dpdf')
     end
 end
 
