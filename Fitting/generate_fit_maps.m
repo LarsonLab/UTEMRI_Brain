@@ -4,8 +4,8 @@ function fit_maps = generate_fit_maps(fit_filename, fit_plus_filename, AIC_thres
 
 % visualization
 load(fit_plus_filename);
-fit_result2_plus = fit_result2;  % fit_result3_plus = fit_result3;
-AIC2_plus = AIC2; % AIC3_plus = AIC3;
+fit_result2_plus = fit_result2; 
+AIC2_plus = AIC2; 
 load(fit_filename);
 
 if nargin < 4 || isempty(im_biasfield)
