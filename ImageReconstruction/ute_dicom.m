@@ -21,6 +21,7 @@ addpath(genpath('../orchestra-sdk-1.7-1.matlab'));
 Isize = size(finalImage);
 
 pfile = GERecon('Pfile.Load', pfile_name);
+pfile.header = GERecon('Pfile.Header', pfile);
 pfile.phases = numel(finalImage(1,1,1,1,:)); 
 pfile.xRes = size(finalImage,1);
 pfile.yRes = size(finalImage,2);
@@ -29,20 +30,25 @@ pfile.echoes = size(finalImage,4);
 
 % calc real res(isotropic,axial)
 corners = GERecon('Pfile.Corners', 1);
-res = abs(corners.UpperRight(2)-corners.UpperLeft(2))/Isize(3); 
-scale = Isize/Isize(3); 
-corners.LowerLeft = corners.LowerLeft.*scale;
-corners.UpperLeft = corners.UpperLeft.*scale;
-corners.UpperRight = corners.UpperRight.*scale;
 orientation = GERecon('Pfile.Orientation', 1);
+outCorners = GERecon('Orient', corners, orientation);
+% res = abs(outCorners.UpperRight(2)-outCorners.UpperLeft(2))/Isize(3);
+res2 = 2;
+scale = Isize/Isize(3);
+scale2 = [1, 1e-6, 1];
+corners.LowerLeft = corners.LowerLeft.*scale2;
+corners.UpperLeft = corners.UpperLeft.*scale2;
+corners.UpperRight = corners.UpperRight.*scale2;
+info = GERecon('Pfile.Info', 1);
 
-    % NEED TO CONFIRM orientation/corners based on slice number
-    % HERE IS HOW this is done without the "corners" adjustment shown
-    % above:
-    %                 sliceInfo.pass = 1;
-    %                sliceInfo.sliceInPass = s;
-    %      info = GERecon('Pfile.Info', sliceInfo);
-    % orientation = info.Orientation;  corners = info.Corners;
+
+%     % NEED TO CONFIRM orientation/corners based on slice number
+%     % HERE IS HOW this is done without the "corners" adjustment shown
+%     % above:
+%                      sliceInfo.pass = 1;
+%                     sliceInfo.sliceInPass = s;
+%            info = GERecon('Pfile.Info', 1);
+%        orientation = info.Orientation;  corners = info.Corners;
 
 
 %  X = repmat(int16(0), [96 86 1 94]);
@@ -51,20 +57,22 @@ X = zeros(96, 86, 1, 94);
 
 seriesDescription = ['UTE T2 - ', output_image];
 
-for s = 1:pfile.slices
+for s = flip(1:pfile.slices)
     
     
     for e = 1:pfile.echoes
         for p = 1:pfile.phases
             
-            mag_t =flip(double(finalImage(:,:,s,e,p) * scaleFactor));
+             mag_t =flip(double(finalImage(:,:,s,e,p) * scaleFactor));
 %             figure;imshow(mag_t);title('mag_t');
 
-%             mag_t = GERecon('Orient', mag_t, orientation);
+%             mag_t2 = GERecon('Orient', mag_t, orientation);
+            
 
             imageNumber = ImageNumber(s, e, p, pfile);
             filename = ['DICOMs_' output_image, '/image_',num2str(imageNumber) '.dcm'];
             GERecon('Dicom.Write', filename, mag_t, imageNumber, orientation, corners, seriesNumber, seriesDescription);
+    
             if image_option~=0
                 phase_t = flip(flip(single(angle(finalImage(:,:,s,e,p))).',1),2);
                 %phase_t = GERecon('Orient', phase_t, orientation);
@@ -76,10 +84,18 @@ for s = 1:pfile.slices
         end
     end
     
+    % sliceInfo.pass = 1
+    % sliceInfo.sliceInPass = s
+    % info = GERecon('Pfile.Info', 1)
+    
     % Get corners and orientation for next slice location?
-    corners.LowerLeft(3) = corners.LowerLeft(3) + res;
-    corners.UpperLeft(3) = corners.UpperLeft(3) + res;
-    corners.UpperRight(3) = corners.UpperRight(3) + res;
+    corners.LowerLeft(3) = corners.LowerLeft(3) + res2;
+    corners.UpperLeft(3) = corners.UpperLeft(3) + res2;
+    corners.UpperRight(3) = corners.UpperRight(3) + res2;
+     
+    % Check header settings in Horos to ensure pixel spacing value is
+    % correct relative to slice thickness
+       
 end
 
 disp([output_image, ' generated.']);

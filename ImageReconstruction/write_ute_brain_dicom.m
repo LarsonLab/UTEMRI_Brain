@@ -39,6 +39,6 @@ end
 im_ute = abs(im_ute); % calculate magnitude from complex number
 
 % 
-ute_dicom(im_ute, pfile_name, 'UTE', 0, 32767/max(abs(im_ute(:))), 0000);
+ute_dicom(im_ute, pfile_name, 'UTE', 0, (32767)/max(abs(im_ute(:))), 0000);
 
 end
