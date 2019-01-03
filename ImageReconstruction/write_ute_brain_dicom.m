@@ -25,12 +25,12 @@ for i = 1:numel(fields)
             scaleFactor = 10;
     end
     
-    seriesNumber = i * 1000;
+    seriesNumberOffset = i;
     
     map = fit_maps.(fieldName);
     
  
-    ute_dicom(map, pfile_name, fieldName, 0, scaleFactor, seriesNumber);
+    ute_dicom(map, pfile_name, fieldName, 0, scaleFactor, seriesNumberOffset);
 
    
 end
