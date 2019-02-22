@@ -1,4 +1,4 @@
-function ute_dicom(finalImage, pfile_name, output_image, image_option, scaleFactor, seriesNumber)
+function ute_dicom(finalImage, pfile_name, output_image, image_option, scaleFactor, seriesNumberOffset)
 % Convert matlab 3D matrix to dicom for UTE sequences
 % resolution is fixed in the recon - FOV/readout(from scanner), isotropic
 % matrix size is determined in the recon
@@ -58,6 +58,8 @@ X = zeros(96, 86, 1, 94);
 
 
 seriesDescription = ['UTE T2 - ', output_image];
+seriesNumber = pfile.header.SeriesData.se_no * 100 + seriesNumberOffset;
+
 
 for s = flip(1:pfile.slices)
     
