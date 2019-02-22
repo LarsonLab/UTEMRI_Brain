@@ -1,14 +1,16 @@
 function ute_dicom(finalImage, pfile_name, output_image, image_option, scaleFactor, seriesNumber)
-% Convert matlab 3D matrix to dicom for UWUTE sequence
+% Convert matlab 3D matrix to dicom for UTE sequences
 % resolution is fixed in the recon - FOV/readout(from scanner), isotropic
 % matrix size is determined in the recon
 % Inputs:
 %   finalImage: 3D image matrix
 %   pfile_name: original pfile name
-%   output_dir: output directory
+%   output_image: output directory
 %   image_option: 1 for both phase and magnitude, 0(offset) mag only
+%   scaleFactor: scale image matrix
+%   seriesNumber: output series number
 %
-% August, 2018, Xucheng Zhu
+% August, 2018, Xucheng Zhu, Nikhil Deveshwar
 
 
 if nargin<4
