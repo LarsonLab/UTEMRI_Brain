@@ -36,7 +36,7 @@ parfor Ix = 1:NI
     
     Sin = imfit(Ix,:);
     [fit_result1(Ix,:), AIC1(Ix), fit_result2(Ix,:), AIC2(Ix), fit_result2m(Ix,:), AIC2m(Ix), fit_result3(Ix,:), AIC3(Ix)] = ...
-        utebrain_fitting_function(TEin, Sin, B0, phi_RF);
+        utebrain_multiscan_fitting_function(TEin, Sin, B0, phi_RF);
     
     %    disp([int2str(Ix) ' of ' int2str(NI)])
 end
