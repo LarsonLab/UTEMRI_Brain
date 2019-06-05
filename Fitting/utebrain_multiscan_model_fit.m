@@ -29,10 +29,7 @@ lb_df_default = -2*ppm_freq;
 
 X0 = []; lb = []; ub = [];
 for n = 1:general_opts.num_components
-    for m = 1:num_scans
-        X0 = [X0, fit_params(n).rho(m).est];
-    end
-     X0 = [X0, fit_params(n).T2.est, fit_params(n).df.est, fit_params(n).phi.est];  % T2, df, phi assumed to be the same across experiments
+     X0 = [X0, fit_params(n).rho.est, fit_params(n).T2.est, fit_params(n).df.est, fit_params(n).phi.est];  % T2, df, phi assumed to be the same across experiments
    
     if isfield(fit_params(n).T2, 'lb')
         lb_T2 = fit_params(n).T2.lb;

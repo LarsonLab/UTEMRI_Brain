@@ -16,7 +16,7 @@ general_opts.num_components = 1; general_opts.complex_fit = 1;
 
 fit_params = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{});
 
-fit_params(1).rho(1:num_scans).est = 1;
+fit_params(1).rho.est = 1*ones(1,num_scans);
 fit_params(1).T2.est = 15;
 fit_params(1).df.est = 0;
 fit_params(1).phi.est = 0;
@@ -55,7 +55,7 @@ if 1
     % add second component
     general_opts.num_components = 2;
     
-    fit_params(2).rho(1:num_scans).est = 0.1;
+    fit_params(2).rho.est = 0.1*ones(1,num_scans);
     fit_params(2).T2.est = .5;
     fit_params(2).T2.lb = .1;fit_params(2).T2.ub = 50;
     fit_params(2).df.est = methylene_freq_est;  % strong influence...
@@ -70,7 +70,7 @@ if 1
         general_opts.plot_flag = 0;
         [fit_result2m, rmse2m, AIC2m, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
         for n = 1:general_opts.num_components
-            fit_params(n).rho(1:num_scans).est = fit_result2m(n).rho(1:num_scans);
+            fit_params(n).rho.est = fit_result2m(n).rho;
             fit_params(n).T2.est = fit_result2m(n).T2;
             fit_params(n).df.est = fit_result2m(n).df;
         end
@@ -94,7 +94,7 @@ end
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
  
     for n = 1:general_opts.num_components
-        fit_params(n).rho(1:num_scans).est = fit_result2(n).rho(1:num_scans);
+        fit_params(n).rho.est = fit_result2(n).rho;
         fit_params(n).T2.est = fit_result2(n).T2;
         fit_params(n).df.est = fit_result2(n).df;
         fit_params(n).phi.est = fit_result2(n).phi;
@@ -102,7 +102,7 @@ end
     
     general_opts.num_components = 3;
     
-    fit_params(3).rho(1:num_scans).est = 0.1;
+    fit_params(3).rho.est = 0.1*ones(1,num_scans);
     fit_params(3).T2.est = 8;
     fit_params(3).T2.lb = .10;fit_params(3).T2.ub = 50;
     fit_params(3).df.est = 0;
