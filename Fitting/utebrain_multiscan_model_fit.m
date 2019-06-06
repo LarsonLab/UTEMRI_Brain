@@ -29,7 +29,7 @@ lb_df_default = -2*ppm_freq;
 
 X0 = []; lb = []; ub = [];
 for n = 1:general_opts.num_components
-     X0 = [X0, fit_params(n).rho.est, fit_params(n).T2.est, fit_params(n).df.est, fit_params(n).phi.est];  % T2, df, phi assumed to be the same across experiments
+     X0 = [X0, fit_params(n).rho.est, fit_params(n).T2.est, fit_params(n).df.est, fit_params(n).phi.est];  % T2, df assumed to be the same across experiments
    
     if isfield(fit_params(n).T2, 'lb')
         lb_T2 = fit_params(n).T2.lb;
@@ -44,9 +44,9 @@ for n = 1:general_opts.num_components
         lb_df = lb_df_default;
     end
     if isfield(fit_params(n).phi, 'lb')
-        lb_phi = fit_params(n).phi.lb;
+        lb_phi = fit_params(n).phi.lb*ones(1,num_scans);
     else
-        lb_phi = fit_params(n).phi.est-2*pi;
+        lb_phi = fit_params(n).phi.est-2*pi*ones(1,num_scans);
     end
     %
     lb = [lb, 0*ones(1,num_scans), lb_T2,  lb_df, lb_phi];
@@ -64,9 +64,9 @@ for n = 1:general_opts.num_components
         ub_df = ub_df_default;
     end
     if isfield(fit_params(n).phi, 'ub')
-        ub_phi = fit_params(n).phi.ub;
+        ub_phi = fit_params(n).phi.ub*ones(1,num_scans);
     else
-        ub_phi = fit_params(n).phi.est+2*pi;
+        ub_phi = fit_params(n).phi.est+2*pi*ones(1,num_scans);
     end
     %
     ub = [ub, 2*ones(1,num_scans), ub_T2,  ub_df, ub_phi];
@@ -89,11 +89,11 @@ end
     function x_out = generate_x_scan(x_in, Iscan)
         x_out = [];
         for m = 1:general_opts.num_components
-                % x = [(component 1) rho_scan1 rho_scan2 ... T2 df phi, (component 2) rho_scan1 rho_scan2 ... T2 df phi, ...]
-                    % x_scan = [(component 1) rho_scanm T2 df phi, (component 2) rho_scanm T2 df phi, ...]
-                    component_offset = (num_scans+3)*(m-1);
+                % x = [(component 1) rho_scan1 rho_scan2 ... T2 df phi_scan1 phi_scan2 ..., (component 2) rho_scan1 rho_scan2 ... T2 df phi_scan1 phi_scan2 , ...]
+                    % x_scan = [(component 1) rho_scanm T2 df phi_scanm, (component 2) rho_scanm T2 df phi_scanm, ...]
+                    component_offset = (2*num_scans+2)*(m-1);
                 x_out = [x_out, x_in(Iscan + component_offset),  x_in(num_scans+1 + component_offset ) ...
-                    x_in(num_scans+2 + component_offset ) x_in(num_scans+3 + component_offset)];
+                    x_in(num_scans+2 + component_offset ) x_in(num_scans+2+Iscan + component_offset)];
                                             end
     end
 
@@ -108,11 +108,11 @@ fit_result = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{});
 % [~,IT2s] = sort(T2s);
 for n = 1:general_opts.num_components
     %    In = 4*(IT2s(n)-1);
-    component_offset = (num_scans+3)*(n-1);
+    component_offset = (2*num_scans+2)*(n-1);
     fit_result(n).rho(1:num_scans) = X(component_offset + [1:num_scans])*Snorm;
     fit_result(n).T2 = X(component_offset + num_scans+1);
     fit_result(n).df = X(component_offset + num_scans+2);
-    fit_result(n).phi = X(component_offset + num_scans+3);
+    fit_result(n).phi = X(component_offset + num_scans+2+ [1:num_scans]);
 end
 
 rmse =sqrt(resnorm);

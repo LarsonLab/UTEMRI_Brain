@@ -19,7 +19,7 @@ fit_params = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{});
 fit_params(1).rho.est = 1*ones(1,num_scans);
 fit_params(1).T2.est = 15;
 fit_params(1).df.est = 0;
-fit_params(1).phi.est = 0;
+fit_params(1).phi.est = 0*ones(1,num_scans);
 
 % fit long T2 component
 general_opts.plot_flag = 0;
@@ -28,7 +28,7 @@ general_opts.plot_flag = plot_flag;
 
 % remove long-T2 phase and frequency (easier to see...)
 for n= 1:num_scans
-    Sin_corrected{n} = Sin_all{n}(:) .* exp(i* (2*pi*fit_result1(1).df .* TEin_all{n}(:) - fit_result1(1).phi) );
+    Sin_corrected{n} = Sin_all{n}(:) .* exp(i* (2*pi*fit_result1(1).df .* TEin_all{n}(:) - fit_result1(1).phi(n)) );
 end
 
 % assume first component fit is good
@@ -38,7 +38,7 @@ fit_params(1).T2.ub = fit_result1(1).T2 + 15;
 fit_params(1).df.est = 0;
 fit_params(1).df.lb = -.05;
 fit_params(1).df.ub = .05;
-fit_params(1).phi.est = 0;
+fit_params(1).phi.est = 0*ones(1,num_scans);
 fit_params(1).phi.lb = -0.05;
 fit_params(1).phi.ub = 0.05;
 
@@ -59,7 +59,7 @@ if 1
     fit_params(2).T2.est = .5;
     fit_params(2).T2.lb = .1;fit_params(2).T2.ub = 50;
     fit_params(2).df.est = methylene_freq_est;  % strong influence...
-    fit_params(2).phi.est = phi_est;  % dphi from RF pulse
+    fit_params(2).phi.est = phi_est*ones(1,num_scans);  % dphi from RF pulse
     %fit_params(2).phi.lb = phi_RF(3)-dphi_bound; fit_params(2).phi.ub = phi_RF(3)+dphi_bound;
     
  %   IuT2 = 1:length(Sin_all);
@@ -84,7 +84,7 @@ if 1
     
     % remove long-T2 phase and frequency again
 for n= 1:num_scans
-    Sin_corrected{n} = Sin_corrected{n}(:) .* exp(i* (2*pi*fit_result2(1).df .* TEin_all{n}(:) - fit_result2(1).phi) );
+    Sin_corrected{n} = Sin_corrected{n}(:) .* exp(i* (2*pi*fit_result2(1).df .* TEin_all{n}(:) - fit_result2(1).phi(n)) );
 end
     general_opts.plot_flag = plot_flag;
     if plot_flag
@@ -106,7 +106,7 @@ end
     fit_params(3).T2.est = 8;
     fit_params(3).T2.lb = .10;fit_params(3).T2.ub = 50;
     fit_params(3).df.est = 0;
-    fit_params(3).phi.est = 0;
+    fit_params(3).phi.est = 0*ones(1,num_scans);
     
     [fit_result3, rmse3, AIC3, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
     
