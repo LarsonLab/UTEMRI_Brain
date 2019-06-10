@@ -15,16 +15,16 @@ methylene_freq_est = 3.5* B0*42.57e-3; % kHz
 general_opts.num_components = 1; general_opts.complex_fit = 1;
 
 fit_params = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
+    fit_params_t1 = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
 
 fit_params(1).rho.est = 1*ones(1,num_scans);
 fit_params(1).T2.est = 15;
 fit_params(1).df.est = 0;
 fit_params(1).phi.est = 0*ones(1,num_scans);
-fit_params(1).T1.est = 800;
 
 % fit long T2 component
 general_opts.plot_flag = 0;
-[fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_all, flips, TR,fit_params, general_opts);
+[fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_all,fit_params, general_opts);
 general_opts.plot_flag = plot_flag;
 
 % remove long-T2 phase and frequency (easier to see...)
@@ -42,7 +42,7 @@ fit_params(1).df.ub = .05;
 fit_params(1).phi.est = 0*ones(1,num_scans);
 fit_params(1).phi.lb = -0.05;
 fit_params(1).phi.ub = 0.05;
-fit_params(1).T1.est = fit_result1(1).T1;
+
 
 if plot_flag
     fit_params1 = fit_params;
@@ -63,7 +63,6 @@ if 1
     fit_params(2).df.est = methylene_freq_est;  % strong influence...
     fit_params(2).phi.est = phi_est*ones(1,num_scans);  % dphi from RF pulse
     %fit_params(2).phi.lb = phi_RF(3)-dphi_bound; fit_params(2).phi.ub = phi_RF(3)+dphi_bound;
-    fit_params(2).T1.est = 300;
     
  %   IuT2 = 1:length(Sin_all);
     
@@ -71,12 +70,11 @@ if 1
         % perform magnitude fit as well
         general_opts.complex_fit = 0;
         general_opts.plot_flag = 0;
-        [fit_result2m, rmse2m, AIC2m, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR,fit_params, general_opts);
+        [fit_result2m, rmse2m, AIC2m, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
         for n = 1:general_opts.num_components
             fit_params(n).rho.est = fit_result2m(n).rho;
             fit_params(n).T2.est = fit_result2m(n).T2;
             fit_params(n).df.est = fit_result2m(n).df;
-            fit_params(n).T1.est = fit_result2m(n).T1;
         end
         
         general_opts.complex_fit = 1;
@@ -84,7 +82,7 @@ if 1
     end
     
     general_opts.plot_flag = 0;
-    [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR,fit_params, general_opts);
+    [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
     
     % remove long-T2 phase and frequency again
 for n= 1:num_scans
@@ -92,30 +90,81 @@ for n= 1:num_scans
 end
     general_opts.plot_flag = plot_flag;
     if plot_flag
-        [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR,fit_params1, general_opts1);
+        [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params1, general_opts1);
+    for n = 1
+        fit_params_t1(n).rho.est = mean(fit_result1(n).rho)* sin(mean(flips));
+        fit_params_t1(n).T2.est = fit_result1(n).T2;
+        fit_params_t1(n).T2.lb = .95*fit_result1(n).T2;
+        fit_params_t1(n).T2.ub = 1.05*fit_result1(n).T2;
+        fit_params_t1(n).df.est = 0;
+        fit_params_t1(n).df.lb = -.05;
+        fit_params_t1(n).df.ub = +.05;
+        fit_params_t1(n).phi.est = 0*ones(1,num_scans);
+        fit_params_t1(n).phi.lb = - .05;
+        fit_params_t1(n).phi.ub = + .05;
     end
     
-    [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR,fit_params, general_opts);
+    fit_params_t1(1).T1.est = .8;  
+    [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts1);
+    fit_params_t1(1).T2.est = fit_result1.T1;
+    end
+    
+    [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
  
     for n = 1:general_opts.num_components
         fit_params(n).rho.est = fit_result2(n).rho;
         fit_params(n).T2.est = fit_result2(n).T2;
         fit_params(n).df.est = fit_result2(n).df;
         fit_params(n).phi.est = fit_result2(n).phi;
-        fit_params(n).T1.est = fit_result2(n).T1;
     end
+    
+
+
+    for n = 1:general_opts.num_components
+        fit_params_t1(n).rho.est = mean(fit_result2(n).rho)* sin(mean(flips));
+        fit_params_t1(n).T2.est = fit_result2(n).T2;
+        fit_params_t1(n).T2.lb = .95*fit_result2(n).T2;
+        fit_params_t1(n).T2.ub = 1.05*fit_result2(n).T2;
+        fit_params_t1(n).df.est = fit_result2(n).df;
+        fit_params_t1(n).df.lb = fit_result2(n).df-.05;
+        fit_params_t1(n).df.ub = fit_result2(n).df+.05;
+        fit_params_t1(n).phi.est = fit_result2(n).phi;
+        fit_params_t1(n).phi.lb = fit_result2(n).phi - .05;
+        fit_params_t1(n).phi.ub = fit_result2(n).phi+ .05;
+    end
+    
+    %fit_params_t1(1).T1.est = .8; 
+    fit_params_t1(2).T1.est = .3;
+    
+    [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts);
+ 
+    
     
     general_opts.num_components = 3;
     
-    fit_params(3).rho.est = 0.1*ones(1,num_scans);
+        fit_params(3).rho.est = 0.1*ones(1,num_scans);
     fit_params(3).T2.est = 8;
     fit_params(3).T2.lb = .10;fit_params(3).T2.ub = 50;
     fit_params(3).df.est = 0;
     fit_params(3).phi.est = 0*ones(1,num_scans);
-    fit_params(3).T1.est = 500;
     
-    [fit_result3, rmse3, AIC3, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR,fit_params, general_opts);
+    [fit_result3, rmse3, AIC3, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
+
+    for n = 1:general_opts.num_components
+        fit_params_t1(n).rho.est = mean(fit_result3(n).rho)* sin(mean(flips));
+        fit_params_t1(n).T2.est = fit_result3(n).T2;
+        fit_params_t1(n).T2.lb = .95*fit_result3(n).T2;
+        fit_params_t1(n).T2.ub = 1.05*fit_result3(n).T2;
+        fit_params_t1(n).df.est = fit_result3(n).df;
+        fit_params_t1(n).df.lb = fit_result3(n).df-.05;
+        fit_params_t1(n).df.ub = fit_result3(n).df+.05;
+        fit_params_t1(n).phi.est = fit_result3(n).phi;
+        fit_params_t1(n).phi.lb = fit_result3(n).phi-.05;
+        fit_params_t1(n).phi.ub = fit_result3(n).phi+.05;
+    end
+    fit_params_t1(1).T1.est = fit_result2(1).T1; fit_params_t1(2).T1.est = fit_result2(2).T1;  fit_params_t1(3).T1.est = .6;
     
+    [fit_result3, rmse3, AIC3, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts);
     
 else
     % Option 2: add med component, then ultrashort
