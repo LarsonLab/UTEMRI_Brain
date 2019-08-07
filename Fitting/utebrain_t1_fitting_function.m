@@ -15,7 +15,7 @@ methylene_freq_est = 3.5* B0*42.57e-3; % kHz
 general_opts.num_components = 1; general_opts.complex_fit = 1;
 
 fit_params = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
-    fit_params_t1 = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
+fit_params_t1 = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
 
 fit_params(1).rho.est = 1*ones(1,num_scans);
 fit_params(1).T2.est = 15;
@@ -44,10 +44,9 @@ fit_params(1).phi.lb = -0.05;
 fit_params(1).phi.ub = 0.05;
 
 
-if plot_flag
     fit_params1 = fit_params;
     general_opts1 = general_opts;
-end
+
 % fit long T2 component
 % [fit_result1_2, rmse1_2, AIC1_2, TEfit, Sfit] = utebrain_model_fit(TEin,Sin_corrected,fit_params, general_opts);
 
@@ -64,7 +63,7 @@ if 1
     fit_params(2).phi.est = phi_est*ones(1,num_scans);  % dphi from RF pulse
     %fit_params(2).phi.lb = phi_RF(3)-dphi_bound; fit_params(2).phi.ub = phi_RF(3)+dphi_bound;
     
- %   IuT2 = 1:length(Sin_all);
+    %   IuT2 = 1:length(Sin_all);
     
     if 1
         % perform magnitude fit as well
@@ -85,12 +84,14 @@ if 1
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
     
     % remove long-T2 phase and frequency again
-for n= 1:num_scans
-    Sin_corrected{n} = Sin_corrected{n}(:) .* exp(i* (2*pi*fit_result2(1).df .* TEin_all{n}(:) - fit_result2(1).phi(n)) );
-end
+    for n= 1:num_scans
+        Sin_corrected{n} = Sin_corrected{n}(:) .* exp(i* (2*pi*fit_result2(1).df .* TEin_all{n}(:) - fit_result2(1).phi(n)) );
+    end
     general_opts.plot_flag = plot_flag;
     if plot_flag
         [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params1, general_opts1);
+    end
+    
     for n = 1
         fit_params_t1(n).rho.est = mean(fit_result1(n).rho)* sin(mean(flips));
         fit_params_t1(n).T2.est = fit_result1(n).T2;
@@ -100,17 +101,17 @@ end
         fit_params_t1(n).df.lb = -.05;
         fit_params_t1(n).df.ub = +.05;
         fit_params_t1(n).phi.est = 0*ones(1,num_scans);
-        fit_params_t1(n).phi.lb = - .05;
-        fit_params_t1(n).phi.ub = + .05;
+        fit_params_t1(n).phi.lb = - .05*ones(1,num_scans);
+        fit_params_t1(n).phi.ub = + .05*ones(1,num_scans);
     end
     
-    fit_params_t1(1).T1.est = .8;  
+    fit_params_t1(1).T1.est = .8;
+    
     [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts1);
     fit_params_t1(1).T2.est = fit_result1.T1;
-    end
     
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
- 
+    
     for n = 1:general_opts.num_components
         fit_params(n).rho.est = fit_result2(n).rho;
         fit_params(n).T2.est = fit_result2(n).T2;
@@ -118,8 +119,8 @@ end
         fit_params(n).phi.est = fit_result2(n).phi;
     end
     
-
-
+    
+    
     for n = 1:general_opts.num_components
         fit_params_t1(n).rho.est = mean(fit_result2(n).rho)* sin(mean(flips));
         fit_params_t1(n).T2.est = fit_result2(n).T2;
@@ -133,23 +134,23 @@ end
         fit_params_t1(n).phi.ub = fit_result2(n).phi+ .05;
     end
     
-    %fit_params_t1(1).T1.est = .8; 
+    %fit_params_t1(1).T1.est = .8;
     fit_params_t1(2).T1.est = .3;
     
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts);
- 
+    
     
     
     general_opts.num_components = 3;
     
-        fit_params(3).rho.est = 0.1*ones(1,num_scans);
+    fit_params(3).rho.est = 0.1*ones(1,num_scans);
     fit_params(3).T2.est = 8;
     fit_params(3).T2.lb = .10;fit_params(3).T2.ub = 50;
     fit_params(3).df.est = 0;
     fit_params(3).phi.est = 0*ones(1,num_scans);
     
     [fit_result3, rmse3, AIC3, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
-
+    
     for n = 1:general_opts.num_components
         fit_params_t1(n).rho.est = mean(fit_result3(n).rho)* sin(mean(flips));
         fit_params_t1(n).T2.est = fit_result3(n).T2;

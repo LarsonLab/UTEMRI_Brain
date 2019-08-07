@@ -114,7 +114,7 @@ end
 lsq_opts = optimset('Display','none','MaxIter', 500, 'MaxFunEvals', 500);
 
 [X,resnorm,residual,exitflag] = lsqnonlin(@model_diff, X0, lb, ub, lsq_opts);
-exitflag
+%exitflag
 
 fit_result = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
 % T2s = X(4*[0:general_opts.num_components-1] + 2);
