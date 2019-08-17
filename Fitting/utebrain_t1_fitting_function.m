@@ -29,7 +29,7 @@ general_opts.plot_flag = plot_flag;
 
 % remove long-T2 phase and frequency (easier to see...)
 for n= 1:num_scans
-    Sin_corrected{n} = Sin_all{n}(:) .* exp(i* (2*pi*fit_result1(1).df .* TEin_all{n}(:) - fit_result1(1).phi(n)) );
+    Sin_corrected{n} = Sin_all{n}(:) .* exp(1i* (2*pi*fit_result1(1).df .* TEin_all{n}(:) - fit_result1(1).phi(n)) );
 end
 
 % assume first component fit is good
@@ -95,8 +95,8 @@ if 1
     for n = 1
         fit_params_t1(n).rho.est = mean(fit_result1(n).rho)* sin(mean(flips));
         fit_params_t1(n).T2.est = fit_result1(n).T2;
-        fit_params_t1(n).T2.lb = .95*fit_result1(n).T2;
-        fit_params_t1(n).T2.ub = 1.05*fit_result1(n).T2;
+        fit_params_t1(n).T2.lb = min(.95* fit_result1(n).T2, 1.05*fit_result1(n).T2);
+        fit_params_t1(n).T2.ub = max(.95* fit_result1(n).T2, 1.05*fit_result1(n).T2);
         fit_params_t1(n).df.est = 0;
         fit_params_t1(n).df.lb = -.05;
         fit_params_t1(n).df.ub = +.05;
@@ -108,7 +108,7 @@ if 1
     fit_params_t1(1).T1.est = .8;
     
     [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts1);
-    fit_params_t1(1).T2.est = fit_result1.T1;
+    fit_params_t1(1).T1.est = fit_result1.T1;
     
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
     
@@ -124,8 +124,8 @@ if 1
     for n = 1:general_opts.num_components
         fit_params_t1(n).rho.est = mean(fit_result2(n).rho)* sin(mean(flips));
         fit_params_t1(n).T2.est = fit_result2(n).T2;
-        fit_params_t1(n).T2.lb = .95*fit_result2(n).T2;
-        fit_params_t1(n).T2.ub = 1.05*fit_result2(n).T2;
+        fit_params_t1(n).T2.lb = min(.95* fit_result2(n).T2, 1.05*fit_result2(n).T2);
+        fit_params_t1(n).T2.ub = max(.95* fit_result2(n).T2, 1.05*fit_result2(n).T2);
         fit_params_t1(n).df.est = fit_result2(n).df;
         fit_params_t1(n).df.lb = fit_result2(n).df-.05;
         fit_params_t1(n).df.ub = fit_result2(n).df+.05;
@@ -154,8 +154,8 @@ if 1
     for n = 1:general_opts.num_components
         fit_params_t1(n).rho.est = mean(fit_result3(n).rho)* sin(mean(flips));
         fit_params_t1(n).T2.est = fit_result3(n).T2;
-        fit_params_t1(n).T2.lb = .95*fit_result3(n).T2;
-        fit_params_t1(n).T2.ub = 1.05*fit_result3(n).T2;
+        fit_params_t1(n).T2.lb = min(.95* fit_result3(n).T2, 1.05*fit_result3(n).T2);
+        fit_params_t1(n).T2.ub = max(.95* fit_result3(n).T2, 1.05*fit_result3(n).T2);
         fit_params_t1(n).df.est = fit_result3(n).df;
         fit_params_t1(n).df.lb = fit_result3(n).df-.05;
         fit_params_t1(n).df.ub = fit_result3(n).df+.05;

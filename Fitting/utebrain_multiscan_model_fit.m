@@ -131,25 +131,25 @@ Sfit{n} = utebrain_signal_model(X_scan, general_opts.num_components, TEfit{n})*S
 
 if general_opts.plot_flag==1
     Sfit_TE = utebrain_signal_model(X_scan, general_opts.num_components, TE_all{n});
-    figure
-    if general_opts.complex_fit
-        %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
-        %     subplot(212)
-        subplot(311)
-        plot(TE_all{n},real(S_all{n}),'b+',TEfit{n},real(Sfit{n}/Snorm), 'b--')
-        subplot(312)
-        plot(TE_all{n},imag(S_all{n}),'g+',TEfit{n},imag(Sfit{n}/Snorm), 'g--')
-        subplot(313)
-        Sresidual = S_all{n}(:) - Sfit_TE(:);
-        plot(TE_all{n},real(Sresidual),'b', TE_all{n}, imag(Sresidual), 'g')
-        
-    else
-        subplot(211)
-        plot(TE_all{n},abs(S_all{n}),'+',TEfit{n},abs(Sfit{n}/Snorm))
-        subplot(212)
-        plot(TE_all{n},abs(S_all{n}(:)) - abs(Sfit_TE(:)))
-        
-    end
+%     figure
+%     if general_opts.complex_fit
+%         %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
+%         %     subplot(212)
+%         subplot(311)
+%         plot(TE_all{n},real(S_all{n}),'b+',TEfit{n},real(Sfit{n}/Snorm), 'b--')
+%         subplot(312)
+%         plot(TE_all{n},imag(S_all{n}),'g+',TEfit{n},imag(Sfit{n}/Snorm), 'g--')
+%         subplot(313)
+%         Sresidual = S_all{n}(:) - Sfit_TE(:);
+%         plot(TE_all{n},real(Sresidual),'b', TE_all{n}, imag(Sresidual), 'g')
+%         
+%     else
+%         subplot(211)
+%         plot(TE_all{n},abs(S_all{n}),'+',TEfit{n},abs(Sfit{n}/Snorm))
+%         subplot(212)
+%         plot(TE_all{n},abs(S_all{n}(:)) - abs(Sfit_TE(:)))
+%         
+%     end
     
 end
 

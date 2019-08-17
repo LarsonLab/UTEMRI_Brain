@@ -26,7 +26,7 @@ else
     %datamask = imgaussfilt3(AIC2_plus, 2) < -250;
 end
 
-for Imaps = 1:7
+for Imaps = 1:11
     
     clear dataplot
     for Ix = 1:length(I)
@@ -36,14 +36,24 @@ for Imaps = 1:7
             case 2
                 dataplot(Ix) = fit_result2_plus(Ix,2).rho ./ fit_result2_plus(Ix,1).rho; sc = [.05 .25]; root_fname = 'uT2_fraction';
             case 3
-                dataplot(Ix) = fit_result2_plus(Ix,2).T2; sc = [0 1.0]; root_fname = 'uT2_T2';
+                dataplot(Ix) = fit_result2_plus(Ix,1).rho; root_fname = 'rho_water';
             case 4
-                dataplot(Ix) = -fit_result2_plus(Ix,2).df*1e3; sc = [-1100 -600]; root_fname = 'uT2_df';
+                dataplot(Ix) = fit_result2_plus(Ix,2).rho; root_fname = 'rho_fat';
             case 5
-                dataplot(Ix) = fit_result2(Ix,1).T2; sc = [15 30]; root_fname = 'lT2_T2';
+                dataplot(Ix) = fit_result2_plus(Ix,1).T1; root_fname = 'T1_water';
             case 6
-                dataplot(Ix) = (fit_result1(Ix,1).df + fit_result2(Ix,1).df)*1e3; sc = [-100 100]; root_fname = 'fieldmap';% good g/w diffs
+                dataplot(Ix) = fit_result2_plus(Ix,2).T1; root_fname = 'T1_fat';
             case 7
+                dataplot(Ix) = fit_result1(Ix,1).T1; sc = [0 4500]; root_fname = 'T1';
+            case 8
+                dataplot(Ix) = fit_result2_plus(Ix,2).T2; sc = [0 1.0]; root_fname = 'uT2_T2';
+            case 9
+                dataplot(Ix) = -fit_result2_plus(Ix,2).df*1e3; sc = [-1100 -600]; root_fname = 'uT2_df';
+            case 10
+                dataplot(Ix) = fit_result2(Ix,1).T2; sc = [15 30]; root_fname = 'lT2_T2';
+            case 11
+                dataplot(Ix) = (fit_result1(Ix,1).df + fit_result2(Ix,1).df)*1e3; sc = [-100 100]; root_fname = 'fieldmap';% good g/w diffs
+            case 12
                 dataplot(Ix) = -AIC2_plus(Ix); sc = [150 350];  root_fname = 'AIC';
                 
         end

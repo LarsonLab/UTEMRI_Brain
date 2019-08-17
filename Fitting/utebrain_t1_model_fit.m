@@ -1,4 +1,4 @@
-function [fit_result, rmse, AIC, TEfit, Sfit] = utebrain_t1_model_fit(TE_all,S_all,flips, TR, fit_params, general_opts);
+function [fit_result, rmse, AIC, TEfit, Sfit] = utebrain_t1_model_fit(TE_all,S_all,flips, TR, fit_params, general_opts)
 
 default_opts = struct('plot_flag', 0, 'B0', 3, 'num_components', 2, 'complex_fit', 0); % global parameters
 
@@ -27,7 +27,7 @@ ppm_freq = general_opts.B0*42.57e-3; % kHz
 ub_df_default = 4.5*ppm_freq;  % frequency is reversed
 lb_df_default = -2*ppm_freq;
 ub_T1_default = 5; % s
-lb_T1_default = .05; % s
+lb_T1_default = .0001; % s
 
 
 X0 = []; lb = []; ub = [];
@@ -47,7 +47,7 @@ for n = 1:general_opts.num_components
         lb_df = lb_df_default;
     end
     if isfield(fit_params(n).phi, 'lb')
-        lb_phi = fit_params(n).phi.lb; %*ones(1,num_scans);
+        lb_phi = fit_params(n).phi.lb; % *ones(1,num_scans);
     else
         lb_phi = fit_params(n).phi.est-2*pi*ones(1,num_scans);
     end
@@ -72,7 +72,7 @@ for n = 1:general_opts.num_components
         ub_df = ub_df_default;
     end
     if isfield(fit_params(n).phi, 'ub')
-        ub_phi = fit_params(n).phi.ub; %*ones(1,num_scans);
+        ub_phi = fit_params(n).phi.ub; % *ones(1,num_scans);
     else
         ub_phi = fit_params(n).phi.est+2*pi*ones(1,num_scans);
     end
@@ -142,29 +142,29 @@ for n =1:num_scans
     
     Sfit{n} = utebrain_t1_signal_model(X_scan, general_opts.num_components, TEfit{n}, flips(n), TR)*Snorm;
     
-    if general_opts.plot_flag==1
-        Sfit_TE = utebrain_t1_signal_model(X_scan, general_opts.num_components, TE_all{n}, flips(n), TR);
-        figure
-        if general_opts.complex_fit
-            %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
-            %     subplot(212)
-            subplot(311)
-            plot(TE_all{n},real(S_all{n}),'b+',TEfit{n},real(Sfit{n}/Snorm), 'b--')
-            subplot(312)
-            plot(TE_all{n},imag(S_all{n}),'g+',TEfit{n},imag(Sfit{n}/Snorm), 'g--')
-            subplot(313)
-            Sresidual = S_all{n}(:) - Sfit_TE(:);
-            plot(TE_all{n},real(Sresidual),'b', TE_all{n}, imag(Sresidual), 'g')
-            
-        else
-            subplot(211)
-            plot(TE_all{n},abs(S_all{n}),'+',TEfit{n},abs(Sfit{n}/Snorm))
-            subplot(212)
-            plot(TE_all{n},abs(S_all{n}(:)) - abs(Sfit_TE(:)))
-            
-        end
-        
-    end
+%     if general_opts.plot_flag==1
+%         Sfit_TE = utebrain_t1_signal_model(X_scan, general_opts.num_components, TE_all{n}, flips(n), TR);
+%         figure
+%         if general_opts.complex_fit
+%             %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
+%             %     subplot(212)
+%             subplot(311)
+%             plot(TE_all{n},real(S_all{n}),'b+',TEfit{n},real(Sfit{n}/Snorm), 'b--')
+%             subplot(312)
+%             plot(TE_all{n},imag(S_all{n}),'g+',TEfit{n},imag(Sfit{n}/Snorm), 'g--')
+%             subplot(313)
+%             Sresidual = S_all{n}(:) - Sfit_TE(:);
+%             plot(TE_all{n},real(Sresidual),'b', TE_all{n}, imag(Sresidual), 'g')
+%             
+%         else
+%             subplot(211)
+%             plot(TE_all{n},abs(S_all{n}),'+',TEfit{n},abs(Sfit{n}/Snorm))
+%             subplot(212)
+%             plot(TE_all{n},abs(S_all{n}(:)) - abs(Sfit_TE(:)))
+%             
+%         end
+%         
+%     end
     
 end
 end
