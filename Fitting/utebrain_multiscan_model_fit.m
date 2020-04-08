@@ -73,15 +73,36 @@ for n = 1:general_opts.num_components
     
 end
 
+
+
     function res = model_diff(x)
         res = [];
         for n = 1:num_scans
+            
+            if general_opts.use_weights == 1
+            % density compensation
+                for k = 1:length(TE_all{n}) - 1
+                    weight{n}(k) = (TE_all{n}(k) + TE_all{n}(k+1)) / 2;
+                end
+            weight{n}(length(TE_all{n})) = 2 * (TE_all{n}(length(TE_all{n}))- TE_all{n}(length(TE_all{n}) -1)); 
+
+            else
+                weight{n} = ones(1,8);
+            end
+            
             x_scan = generate_x_scan(x,n);
                     Sest{n} = utebrain_signal_model(x_scan, general_opts.num_components, TE_all{n});
         if general_opts.complex_fit
-            res = [res; real(Sest{n}(:) - S_all{n}(:)); imag(Sest{n}(:) - S_all{n}(:))];
+            if general_opts.use_weights == 1;
+                %res = [res; weight{n}(:) .* real(Sest{n}(:) - S_all{n}(:)); weight{n}(:) .* imag(Sest{n}(:) - S_all{n}(:))];
+            else
+                res = [res; real(Sest{n}(:) - S_all{n}(:)); imag(Sest{n}(:) - S_all{n}(:))];
+            end
+      
+            % weight{n}(:) * real(Sest... * imag(Sest...
         else
             res = [res; abs(Sest{n}(:)) - abs(S_all{n}(:))];
+            % weight{n}(:) * abs(Sest...
         end
         end
     end
@@ -94,7 +115,7 @@ end
                     component_offset = (2*num_scans+2)*(m-1);
                 x_out = [x_out, x_in(Iscan + component_offset),  x_in(num_scans+1 + component_offset ) ...
                     x_in(num_scans+2 + component_offset ) x_in(num_scans+2+Iscan + component_offset)];
-                                            end
+        end
     end
 
 %opts = optimset('MaxIter', 2000, 'MaxFunEvals', 2000, 'TolFun', 10^(-7), 'TolX', 10^(-7));
@@ -131,15 +152,17 @@ Sfit{n} = utebrain_signal_model(X_scan, general_opts.num_components, TEfit{n})*S
 
 if general_opts.plot_flag==1
     Sfit_TE = utebrain_signal_model(X_scan, general_opts.num_components, TE_all{n});
-%     figure
+%    figure
 %     if general_opts.complex_fit
-%         %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
-%         %     subplot(212)
-%         subplot(311)
+%        %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
+%        %     subplot(212)
+%         subplot(411)
 %         plot(TE_all{n},real(S_all{n}),'b+',TEfit{n},real(Sfit{n}/Snorm), 'b--')
-%         subplot(312)
+%         subplot(412)
+%         plot(TE_all{n},real(S_all{n}),'b+',TEfit{n},real(Sfit{n}/Snorm), 'b--')
+%         subplot(413)
 %         plot(TE_all{n},imag(S_all{n}),'g+',TEfit{n},imag(Sfit{n}/Snorm), 'g--')
-%         subplot(313)
+%         subplot(414)
 %         Sresidual = S_all{n}(:) - Sfit_TE(:);
 %         plot(TE_all{n},real(Sresidual),'b', TE_all{n}, imag(Sresidual), 'g')
 %         

@@ -27,7 +27,7 @@ ppm_freq = general_opts.B0*42.57e-3; % kHz
 ub_df_default = 4.5*ppm_freq;  % frequency is reversed
 lb_df_default = -2*ppm_freq;
 ub_T1_default = 5; % s
-lb_T1_default = .0001; % s
+lb_T1_default = .1; % s
 
 
 X0 = []; lb = []; ub = [];
@@ -86,16 +86,35 @@ for n = 1:general_opts.num_components
     
 end
 
-    function res = model_diff(x)
+    function [res, resJ] = model_diff(x)
+        % resJ
         res = [];
         for n = 1:num_scans
-            x_scan = generate_x_scan(x,n);
-            Sest{n} = utebrain_t1_signal_model(x_scan, general_opts.num_components, TE_all{n}, flips(n), TR);
-            if general_opts.complex_fit
-                res = [res; real(Sest{n}(:) - S_all{n}(:)); imag(Sest{n}(:) - S_all{n}(:))];
+            
+            if general_opts.use_weights == 1
+            % density compensation
+                for k = 1:length(TE_all{n}) - 1
+                    weight{n}(k) = (TE_all{n}(k) + TE_all{n}(k+1)) / 2;
+                end
+            weight{n}(length(TE_all{n})) = 2 * (TE_all{n}(length(TE_all{n}))- TE_all{n}(length(TE_all{n}) -1)); 
+
             else
-                res = [res; abs(Sest{n}(:)) - abs(S_all{n}(:))];
+                weight{n} = ones(1,8);
+            end        
+        
+        
+        
+            x_scan = generate_x_scan(x,n);
+                Sest{n} = utebrain_t1_signal_model(x_scan, general_opts.num_components, TE_all{n}, flips(n), TR);
+        if general_opts.complex_fit
+            if general_opts.use_weights == 1;
+                res = [res; weight{n}(:) .* real(Sest{n}(:) - S_all{n}(:)); weight{n}(:) .* imag(Sest{n}(:) - S_all{n}(:))];
+            else
+                res = [res; real(Sest{n}(:) - S_all{n}(:)); imag(Sest{n}(:) - S_all{n}(:))];
             end
+        else
+            res = [res; abs(Sest{n}(:)) - abs(S_all{n}(:))];
+        end
         end
     end
 
@@ -112,6 +131,7 @@ end
 
 %opts = optimset('MaxIter', 2000, 'MaxFunEvals', 2000, 'TolFun', 10^(-7), 'TolX', 10^(-7));
 lsq_opts = optimset('Display','none','MaxIter', 500, 'MaxFunEvals', 500);
+
 
 [X,resnorm,residual,exitflag] = lsqnonlin(@model_diff, X0, lb, ub, lsq_opts);
 %exitflag
@@ -142,8 +162,8 @@ for n =1:num_scans
     
     Sfit{n} = utebrain_t1_signal_model(X_scan, general_opts.num_components, TEfit{n}, flips(n), TR)*Snorm;
     
-%     if general_opts.plot_flag==1
-%         Sfit_TE = utebrain_t1_signal_model(X_scan, general_opts.num_components, TE_all{n}, flips(n), TR);
+    if general_opts.plot_flag==1
+        Sfit_TE = utebrain_t1_signal_model(X_scan, general_opts.num_components, TE_all{n}, flips(n), TR);
 %         figure
 %         if general_opts.complex_fit
 %             %     plot(TE,abs(S),'+',TEfit,abs(Sfit/Snorm))
@@ -163,8 +183,8 @@ for n =1:num_scans
 %             plot(TE_all{n},abs(S_all{n}(:)) - abs(Sfit_TE(:)))
 %             
 %         end
-%         
-%     end
+        
+    end
     
 end
 end

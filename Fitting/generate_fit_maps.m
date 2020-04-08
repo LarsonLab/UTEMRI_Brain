@@ -26,13 +26,13 @@ else
     %datamask = imgaussfilt3(AIC2_plus, 2) < -250;
 end
 
-for Imaps = 1:11
+for Imaps = 1:15
     
-    clear dataplot
+    %clear dataplot
     for Ix = 1:length(I)
         switch Imaps
             case 1
-                dataplot(Ix) = fit_result2_plus(Ix,2).rho ./ im_biasfield(I(Ix)); sc = [.0 .04]; root_fname = 'uT2_corrected';
+                dataplot(Ix) = fit_result2_plus(Ix,2).rho./ im_biasfield(I(Ix)); sc = [.0 .04]; root_fname = 'uT2_corrected';
             case 2
                 dataplot(Ix) = fit_result2_plus(Ix,2).rho ./ fit_result2_plus(Ix,1).rho; sc = [.05 .25]; root_fname = 'uT2_fraction';
             case 3
@@ -44,16 +44,18 @@ for Imaps = 1:11
             case 6
                 dataplot(Ix) = fit_result2_plus(Ix,2).T1; root_fname = 'T1_fat';
             case 7
-                dataplot(Ix) = fit_result1(Ix,1).T1; sc = [0 4500]; root_fname = 'T1';
-            case 8
-                dataplot(Ix) = fit_result2_plus(Ix,2).T2; sc = [0 1.0]; root_fname = 'uT2_T2';
+                dataplot(Ix) = fit_result2(Ix,1).T1; sc = [0 4500]; root_fname = 'T1';
+            case 8 
+                dataplot(Ix) = fit_result2_plus(Ix,2).T1 ./ fit_result2_plus(Ix,1).T1; root_fname = 'T1_fraction';
             case 9
-                dataplot(Ix) = -fit_result2_plus(Ix,2).df*1e3; sc = [-1100 -600]; root_fname = 'uT2_df';
+                dataplot(Ix) = fit_result2_plus(Ix,2).T2; sc = [0 1.0]; root_fname = 'uT2_T2';
             case 10
-                dataplot(Ix) = fit_result2(Ix,1).T2; sc = [15 30]; root_fname = 'lT2_T2';
+                dataplot(Ix) = -fit_result2_plus(Ix,2).df*1e3; sc = [-1100 -600]; root_fname = 'uT2_df';
             case 11
-                dataplot(Ix) = (fit_result1(Ix,1).df + fit_result2(Ix,1).df)*1e3; sc = [-100 100]; root_fname = 'fieldmap';% good g/w diffs
+                dataplot(Ix) = fit_result2(Ix,1).T2; sc = [15 30]; root_fname = 'lT2_T2';
             case 12
+                dataplot(Ix) = (fit_result1(Ix,1).df + fit_result2(Ix,1).df)*1e3; sc = [-100 100]; root_fname = 'fieldmap';% good g/w diffs
+            case 13
                 dataplot(Ix) = -AIC2_plus(Ix); sc = [150 350];  root_fname = 'AIC';
                 
         end

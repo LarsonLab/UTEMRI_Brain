@@ -23,12 +23,16 @@ fit_params(1).phi.est = 0*ones(1,num_scans);
 
 % fit long T2 component
 general_opts.plot_flag = 0;
+%general_opts.use_weights = 0;
+
 [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_all,fit_params, general_opts);
 general_opts.plot_flag = plot_flag;
 
+%general_opts.use_weights = 0;
+
 % remove long-T2 phase and frequency (easier to see...)
 for n= 1:num_scans
-    Sin_corrected{n} = Sin_all{n}(:) .* exp(i* (2*pi*fit_result1(1).df .* TEin_all{n}(:) - fit_result1(1).phi(n)) );
+    Sin_corrected{n} = Sin_all{n}(:) .* exp(1i* (2*pi*fit_result1(1).df .* TEin_all{n}(:) - fit_result1(1).phi(n)) );
 end
 
 % assume first component fit is good
@@ -88,8 +92,11 @@ for n= 1:num_scans
 end
     general_opts.plot_flag = plot_flag;
     if plot_flag
+        %general_opts.use_weights = 0;
         [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params1, general_opts1);
     end
+    
+    %general_opts.use_weights = 0;
     
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
  

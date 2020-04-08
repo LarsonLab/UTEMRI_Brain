@@ -23,9 +23,13 @@ fit_params(1).df.est = 0;
 fit_params(1).phi.est = 0*ones(1,num_scans);
 
 % fit long T2 component
+general_opts.use_weights = 0;
 general_opts.plot_flag = 0;
+
 [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_all,fit_params, general_opts);
 general_opts.plot_flag = plot_flag;
+
+general_opts.use_weights = 0;
 
 % remove long-T2 phase and frequency (easier to see...)
 for n= 1:num_scans
@@ -85,11 +89,15 @@ if 1
     
     % remove long-T2 phase and frequency again
     for n= 1:num_scans
-        Sin_corrected{n} = Sin_corrected{n}(:) .* exp(i* (2*pi*fit_result2(1).df .* TEin_all{n}(:) - fit_result2(1).phi(n)) );
+        Sin_corrected{n} = Sin_corrected{n}(:) .* exp(1i* (2*pi*fit_result2(1).df .* TEin_all{n}(:) - fit_result2(1).phi(n)) );
     end
+    
     general_opts.plot_flag = plot_flag;
     if plot_flag
+        general_opts.use_weights = 0;
         [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params1, general_opts1);
+        
+        general_opts.use_weights = 0;
     end
     
     for n = 1
@@ -105,9 +113,17 @@ if 1
         fit_params_t1(n).phi.ub = + .05*ones(1,num_scans);
     end
     
-    fit_params_t1(1).T1.est = .8;
+    % fit absolute fractional component value to each flip angle (3/19)
+    % use stripped down version
+    % sanity check in data to make sure curves look expected
+    
+    fit_params_t1(1).T1.est = 0.8;
+    
+    general_opts1.plot_flag = 0;
     
     [fit_result1, rmse1, AIC1, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts1);
+    general_opts1.use_weights = 0;
+    
     fit_params_t1(1).T1.est = fit_result1.T1;
     
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_multiscan_model_fit(TEin_all,Sin_corrected,fit_params, general_opts);
@@ -134,12 +150,17 @@ if 1
         fit_params_t1(n).phi.ub = fit_result2(n).phi+ .05;
     end
     
+  
+    
     %fit_params_t1(1).T1.est = .8;
     fit_params_t1(2).T1.est = .3;
     
+    
+    general_opts.use_weights = 0;
+    
     [fit_result2, rmse2, AIC2, TEfit, Sfit] = utebrain_t1_model_fit(TEin_all,Sin_corrected, flips, TR, fit_params_t1, general_opts);
     
-    
+    general_opts.use_weights = 0;
     
     general_opts.num_components = 3;
     
