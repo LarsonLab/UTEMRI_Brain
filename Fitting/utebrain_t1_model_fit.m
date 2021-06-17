@@ -133,8 +133,11 @@ end
 lsq_opts = optimset('Display','none','MaxIter', 500, 'MaxFunEvals', 500);
 
 
-[X,resnorm,residual,exitflag] = lsqnonlin(@model_diff, X0, lb, ub, lsq_opts);
-%exitflag
+[X,resnorm,residual,~,~,~,J] = lsqnonlin(@model_diff, X0, lb, ub, lsq_opts);
+  
+CI = nlparci(X,residual,'jacobian',J);
+X_lb = CI(:,1);
+X_ub = CI(:,2);
 
 fit_result = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
 % T2s = X(4*[0:general_opts.num_components-1] + 2);
@@ -146,6 +149,18 @@ for n = 1:general_opts.num_components
     fit_result(n).df = X(component_offset + 3);
     fit_result(n).phi = X(component_offset + 3+ [1:num_scans]);
     fit_result(n).T1 = X(component_offset + 1*num_scans+4);
+    % lower bound
+    fit_result(n).rho_lb = X_lb(component_offset + 1)*Snorm;
+    fit_result(n).T2_lb = X_lb(component_offset + 2);
+    fit_result(n).df_lb = X_lb(component_offset + 3);
+    fit_result(n).phi_lb = X_lb(component_offset + 3+ [1:num_scans]);
+    fit_result(n).T1_lb = X_lb(component_offset + 1*num_scans+4);
+    % upper bound
+    fit_result(n).rho_ub = X_ub(component_offset + 1)*Snorm;
+    fit_result(n).T2_ub = X_ub(component_offset + 2);
+    fit_result(n).df_ub = X_ub(component_offset + 3);
+    fit_result(n).phi_ub = X_ub(component_offset + 3+ [1:num_scans]);
+    fit_result(n).T1_ub = X_ub(component_offset + 1*num_scans+4);
 end
 
 rmse =sqrt(resnorm);
