@@ -292,7 +292,7 @@ for e = 1:length(echoes)
         list = exist([root_dir '/smap_m1.mat'], 'file');
         if e == 1
             if ~skip_calib_coil || ~list
-                disp('unfft to generate calibration k-space')
+                disp('nufft to generate calibration k-space')
                 %         name = ['/data/larson/brain_uT2/2016-04-27_7T-vounteer/tmpfftec' int2str(echoes)];
                 im_under=bart('nufft -a -p', reshape(dcf_all,[1 tot_npts]), reshape(ktraj, [3 tot_npts]), reshape(data_pc,[1 tot_npts 1 length(coils)]));
                 k_calb=bart('fft -u 7',im_under);

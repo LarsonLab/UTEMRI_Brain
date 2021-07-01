@@ -62,7 +62,7 @@ for ii = 1:Ncomp
     end
     % phi
     phiArray = cat(1,modelfit(:,ii).phi);
-    phiErrArray = cat(2,modelfit(:,ii).phi_ub) - cat(2,modelfit(:,ii).phi_lb);
+    phiErrArray = reshape(cat(2,modelfit(:,ii).phi_ub) - cat(2,modelfit(:,ii).phi_lb),[],length(I));
     for nn = 1:length(modelfit(1,1).phi)
         str = sprintf('phi%i',nn);
         str_err = sprintf('phi%i_err',nn);

@@ -1,5 +1,5 @@
 function [fit_result, rmse, AIC, TEfit, Sfit, Sfit_TE] = ...
-    UTE_T1T2_model_fit(TE_all,S_all,flips, TR, fit_params, general_opts)
+    UTE_T1T2_model_fit_singlePhi(TE_all,S_all,flips, TR, fit_params, general_opts)
 
 default_opts = struct('plot_flag', 0, 'B0', 3, 'num_components', 2, 'complex_fit', 0); % global parameters
 
@@ -31,7 +31,8 @@ lb_T1_default = 0.1; % s
 
 X0 = []; lb = []; ub = [];
 for n = 1:general_opts.num_components
-    X0 = [X0, fit_params(n).rho.est, fit_params(n).T2.est, fit_params(n).df.est, fit_params(n).phi.est, fit_params(n).T1.est];  % T2, df, T1 assumed to be the same across experiments
+    X0 = [X0, fit_params(n).rho.est, fit_params(n).T2.est, fit_params(n).df.est, ...
+        fit_params(n).phi.est(1), fit_params(n).T1.est];  % T2, df, T1 assumed to be the same across experiments
     
     if isfield(fit_params(n).T2, 'lb')
         lb_T2 = fit_params(n).T2.lb;
@@ -46,9 +47,9 @@ for n = 1:general_opts.num_components
         lb_df = lb_df_default;
     end
     if isfield(fit_params(n).phi, 'lb')
-        lb_phi = fit_params(n).phi.lb.*ones(1,num_scans);
+        lb_phi = fit_params(n).phi.lb(1);
     else
-        lb_phi = fit_params(n).phi.est-2*pi*ones(1,num_scans);
+        lb_phi = fit_params(n).phi.est(1)-2*pi;
     end
     if isfield(fit_params(n).T1, 'lb')
         lb_T1 = fit_params(n).T1.lb;
@@ -71,9 +72,9 @@ for n = 1:general_opts.num_components
         ub_df = ub_df_default;
     end
     if isfield(fit_params(n).phi, 'ub')
-        ub_phi = fit_params(n).phi.ub.*ones(1,num_scans);
+        ub_phi = fit_params(n).phi.ub(1);
     else
-        ub_phi = fit_params(n).phi.est+2*pi*ones(1,num_scans);
+        ub_phi = fit_params(n).phi.est(1)+2*pi;
     end
     if isfield(fit_params(n).T1, 'ub')
         ub_T1 = fit_params(n).T1.ub;
@@ -88,6 +89,7 @@ end
     function [res, resJ] = model_diff(x)
         % resJ
         res = [];
+        x_scan = generate_x_scan(x);
         for n = 1:num_scans
             
             if general_opts.use_weights == 1
@@ -101,7 +103,6 @@ end
                 weight{n} = ones(1,8);
             end
             
-            x_scan = generate_x_scan(x,n);
             Sest{n} = UTE_T1T2_signal_model(x_scan, TE_all{n}, flips(n), general_opts);
             if general_opts.complex_fit
                 if general_opts.use_weights == 1;
@@ -115,21 +116,20 @@ end
         end
     end
 
-    function x_out = generate_x_scan(x_in, Iscan)
+    function x_out = generate_x_scan(x_in)
         x_out = [];
         for m = 1:general_opts.num_components
             % x = [(component 1) rho T2 df phi_scan1 phi_scan2 ...T1 , (component 2) rho T2 df phi_scan1 phi_scan2 ...T1, ...]
             % x_scan = [(component 1) rho T2 df phi_scanm, T1 (component 2) rho T2 df phi_scanm T1, ...]
-            component_offset = (1*num_scans+4)*(m-1);
+            component_offset = 5*(m-1);
             x_out = [x_out, x_in(1 + component_offset),  x_in(2 + component_offset ) ...
-                x_in(3 + component_offset ) x_in(3+Iscan + component_offset) ...
-                x_in(1*num_scans+4 + component_offset)];
+                x_in(3 + component_offset ) x_in(4 + component_offset) ...
+                x_in(5 + component_offset)];
         end
     end
 
 %opts = optimset('MaxIter', 2000, 'MaxFunEvals', 2000, 'TolFun', 10^(-7), 'TolX', 10^(-7));
 lsq_opts = optimset('Display','none','MaxIter', 500, 'MaxFunEvals', 500);
-
 
 [X,resnorm,residual,~,~,~,J] = lsqnonlin(@model_diff, X0, lb, ub, lsq_opts);
 %exitflag
@@ -142,24 +142,24 @@ fit_result = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
 % T2s = X(4*[0:general_opts.num_components-1] + 2);
 % [~,IT2s] = sort(T2s);
 for n = 1:general_opts.num_components
-    component_offset = (1*num_scans+4)*(n-1);
+    component_offset = 5*(n-1);
     fit_result(n).rho = X(component_offset + 1)*Snorm;
     fit_result(n).T2 = X(component_offset + 2);
     fit_result(n).df = X(component_offset + 3);
-    fit_result(n).phi = X(component_offset + 3+ [1:num_scans]);
-    fit_result(n).T1 = X(component_offset + 1*num_scans+4);
+    fit_result(n).phi = X(component_offset + 4)*ones(1,num_scans);
+    fit_result(n).T1 = X(component_offset + 5);
     % lower bound
     fit_result(n).rho_lb = X_lb(component_offset + 1)*Snorm;
     fit_result(n).T2_lb = X_lb(component_offset + 2);
     fit_result(n).df_lb = X_lb(component_offset + 3);
-    fit_result(n).phi_lb = X_lb(component_offset + 3+ [1:num_scans]);
-    fit_result(n).T1_lb = X_lb(component_offset + 1*num_scans+4);
+    fit_result(n).phi_lb = X_lb(component_offset + 4)*ones(1,num_scans);
+    fit_result(n).T1_lb = X_lb(component_offset + 5);
     % upper bound
     fit_result(n).rho_ub = X_ub(component_offset + 1)*Snorm;
     fit_result(n).T2_ub = X_ub(component_offset + 2);
     fit_result(n).df_ub = X_ub(component_offset + 3);
-    fit_result(n).phi_ub = X_ub(component_offset + 3+ [1:num_scans]);
-    fit_result(n).T1_ub = X_ub(component_offset + 1*num_scans+4);
+    fit_result(n).phi_ub = X_ub(component_offset + 4)*ones(1,num_scans);
+    fit_result(n).T1_ub = X_ub(component_offset + 5);
 end
 
 rmse =sqrt(resnorm);
@@ -170,9 +170,9 @@ numParams = length(X);
 % end
 AIC = aic(residual, length(S), numParams);
 
-for n =1:num_scans
+for n = 1:num_scans
     TEfit{n}=linspace(0,max(TE_all{n}));
-    X_scan = generate_x_scan(X,n);
+    X_scan = generate_x_scan(X);
     
     Sfit{n} = utebrain_t1_signal_model(X_scan, general_opts.num_components, TEfit{n}, flips(n), TR)*Snorm;
     Sfit_TE{n} = utebrain_t1_signal_model(X_scan, general_opts.num_components, TE_all{n}, flips(n), TR)*Snorm;

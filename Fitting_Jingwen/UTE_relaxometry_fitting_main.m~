@@ -384,7 +384,6 @@ general_opts.phi_RF = phi_RF;
 general_opts.fixPhi = 0;
 general_opts.singlePhi = 1;
 general_opts.fixDf = 1;
-general_opts.fixT1comp2 = 1; general_opts.T1median = 0.5259;
 general_opts.plot_flag = plot_flag;
 general_opts.methylene_freq_est = 3.5*B0*42.57e-3; % kHz % 3.5 2.31
 
@@ -524,11 +523,7 @@ xlabel('Comp2 T1'); ylabel('Comp1 T1 CV (%)');
 ylim([0 100]); xlim([0 1]);
 
 thresh = prctile(fit_maps{2}.T1_cv(I),10);
-line([0 1], [thresh thresh], 'Color', 'k');
-
-T1belowTh = fit_maps{2}.T1(fit_maps{2}.T1_cv < thresh);
-medianT1 = nanmedian(T1belowTh);
-scatter(medianT1, thresh, 'rd', 'filled');
+line([]);
 
 %% plot ROI stats
 
