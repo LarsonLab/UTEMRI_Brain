@@ -1,5 +1,5 @@
 function [fit_result, rmse, AIC, TEfit, Sfit, Sfit_TE] = ...
-    UTE_T1T2_model_fit_singlePhi(TE_all,S_all,flips, TR, fit_params, general_opts)
+    UTE_T1T2_model_fit_singlePhi(TE_all,S_all,flips, TR, fit_params, general_opts, Ncomp)
 
 default_opts = struct('plot_flag', 0, 'B0', 3, 'num_components', 2, 'complex_fit', 0); % global parameters
 
@@ -9,6 +9,11 @@ for k = 1:length(names)
         general_opts.(names{k}) = default_opts.(names{k});
     end
 end
+
+if nargin == 7
+    general_opts.num_components = Ncomp;
+end
+fit_params(1).rho.est = 1/sin(mean(flips));
 
 num_scans = length(S_all);
 

@@ -2,9 +2,9 @@ clear; clc;
 
 %% Add functions to path, set flags
 
-addpath(genpath('/working/larson/jingwen/001_scripts/UTEMRI_Brain'));
+addpath(genpath('/home/jyao3/020_UTE_Brain/UTEMRI_Brain'));
+addpath(genpath('/home/jyao3/010_MATLAB_Utils'));
 addpath(genpath('/data/larson2/brain_uT2/orchestra-sdk-1.7-1.matlab'));
-addpath(genpath('/working/larson/jingwen/001_scripts/MATLAB_Utils'));
 
 flag_writefiles = 0;
 flag_testOneSlice = 1; slice_number = 46;
@@ -374,22 +374,25 @@ FAmapfit = FA_map_ute_test(I);
 
 %% fitting multiscan T2* and T1
 
+% save('test_IDEAL_slice.mat','I','imfit','TEin','FAmapfit',...
+%     'AFI_nominal_flip','flips','brainmask_cut_test','im_norm_test');
+
 clear('fitting_result');
 
-plot_flag = 0;
+plot_flag = 1;
 
 general_opts.TR = TR;
 general_opts.B0 = B0;
 general_opts.phi_RF = phi_RF;
 general_opts.fixPhi = 0;
 general_opts.singlePhi = 1;
-general_opts.fixDf = 1;
-general_opts.fixT1comp2 = 1; general_opts.T1median = 0.5259;
+general_opts.fixDf = 0;
+general_opts.fixT1comp2 = 0; general_opts.T1median = 0.5259;
 general_opts.plot_flag = plot_flag;
 general_opts.methylene_freq_est = 3.5*B0*42.57e-3; % kHz % 3.5 2.31
 
 % loop through voxels for fitting
-parfor Ix = 1:length(I)
+for Ix = 500 % 1:length(I)
     
     if mod(Ix,100) == 0
         disp(['Processing voxel ' num2str(Ix) ' of ' num2str(length(I)) ' (' num2str(Ix/length(I)*100,2) '%)']);
@@ -430,6 +433,8 @@ parfor Ix = 1:length(I)
 %         UTE_fitting_function_step2(TEin, Sin, aflips, general_opts, fitting_result_pre(Ix), PHIin);
 
 end
+
+% save('test_IDEAL_data.mat','TEin','Sin','aflips');
 
 %% save and plot parameter maps
 
