@@ -37,7 +37,8 @@ lb_T1_default = 0.1; % s
 X0 = []; lb = []; ub = [];
 for n = 1:general_opts.num_components
     X0 = [X0, fit_params(n).rho.est, fit_params(n).T2.est, fit_params(n).df.est, ...
-        fit_params(n).phi.est(1), fit_params(n).T1.est];  % T2, df, T1 assumed to be the same across experiments
+        fit_params(n).phi.est(1), fit_params(n).T1.est];  
+    % T2, df, T1 assumed to be the same across experiments
     
     if isfield(fit_params(n).T2, 'lb')
         lb_T2 = fit_params(n).T2.lb;

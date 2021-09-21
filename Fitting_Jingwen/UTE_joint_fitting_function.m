@@ -15,7 +15,9 @@ Sin_corrected = Sin_all;
 % 1 component complex
 
 general_opts.num_components = 1;
-general_opts.complex_fit = 1;
+if ~isfield(general_opts, 'complex_fit')
+    general_opts.complex_fit = 1;
+end
 
 fit_params = struct('rho',{}, 'T2',{}, 'df', {}, 'phi',{}, 'T1', {});
 % comp1
@@ -62,8 +64,8 @@ fitting_result.comp1T1.AIC = AIC;
 
 if plot_flag
     plot_fitting(general_opts, TEin_all, Sin_corrected, TEfit, Sfit, Sfit_TE);
-    subplot(211); title('1 comp T2+T1');
-    export_fig('fitplot_Comp1wT1','-png','-transparent'); close;
+%     subplot(211); title('1 comp T2+T1');
+%     export_fig('fitplot_Comp1wT1','-png','-transparent'); close;
 end
 
 fit_params(1).T1.est = fitting_result.comp1T1.T1;
@@ -76,7 +78,9 @@ end
 
 % 2 component
 
-general_opts.complex_fit = 1;
+if ~isfield(general_opts, 'complex_fit')
+    general_opts.complex_fit = 1;
+end
 general_opts.num_components = 2;
 
 % 2 component + T1
@@ -101,8 +105,8 @@ fitting_result.comp2T1(1).AIC = AIC;
 
 if plot_flag
     plot_fitting(general_opts, TEin_all, Sin_corrected, TEfit, Sfit, Sfit_TE);
-    subplot(211); title('2 comp T2+T1');
-    export_fig('fitplot_Comp2wT1','-png','-transparent'); close;
+%     subplot(211); title('2 comp T2+T1');
+%     export_fig('fitplot_Comp2wT1','-png','-transparent'); close;
 end
 
 end
@@ -135,18 +139,23 @@ for n = 1:num_scans
         xlabel('TE (ms)'); ylabel('Residual signal');
         ylim([-0.1 0.1]);
     else
-        subplot(211)
+        subplot(221)
         plot(TE_all{n},abs(S_all{n}/Snorm),'+','Color', ColorOrder(n,:)); hold on;
         l(n) = plot(TEfit{n},abs(Sfit{n}/Snorm),'--','Color', ColorOrder(n,:));
         xlabel('TE (ms)'); ylabel('Normalized signal');
         ylim([-1 1]);
+        subplot(222)
+        plot(TEfit{n},real(Sfit{n}/Snorm),'-','Color', ColorOrder(n,:)); hold on;
+        plot(TEfit{n},imag(Sfit{n}/Snorm),':','Color', ColorOrder(n,:));
+        xlabel('TE (ms)'); ylabel('Fitted signal');
+        ylim([-1 1]);
         subplot(212)
-        plot(TE_all{n},abs(S_all{n}(:)/Snorm) - abs(Sfit_TE{n}(:)/Snorm),'-','Color', ColorOrder(n,:));
+        plot(TE_all{n},abs(S_all{n}(:)/Snorm) - abs(Sfit_TE{n}(:)/Snorm),'-','Color', ColorOrder(n,:)); hold on;
         xlabel('TE (ms)'); ylabel('Residual signal');
         ylim([-0.1 0.1]);
     end
 end
-subplot(211)
+subplot(221)
 legend(l,{'FA = 6deg','12deg','18deg'},'box','off','location','best');
 
 end

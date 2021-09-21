@@ -54,7 +54,7 @@ Rho_frac = zeros(length(I),1);
 Rmse = zeros(length(I),1);
 Iter = zeros(length(I),1);
 
-parfor Ix = 1:length(I)
+for Ix = 31 % 1:100 % 1:length(I)
     
     if mod(Ix,100) == 0
         disp(['Processing voxel ' num2str(Ix) ' of ' num2str(length(I)) ' (' num2str(Ix/length(I)*100,2) '%)']);
@@ -137,6 +137,8 @@ parfor Ix = 1:length(I)
     Iter(Ix) = iter;
     
 end
+
+plot_fitting_voxel(S0all, TEall, S_fit, iter, rms(S_res), 0, 3)
 
 %% plot maps
 

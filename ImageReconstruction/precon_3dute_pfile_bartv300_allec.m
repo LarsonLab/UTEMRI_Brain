@@ -1,6 +1,7 @@
 function [im, header] = precon_3dute_pfile_bartv300_allec(pfile, ...
     coils, undersamp, ...
-    skip, freq_shift, echoes,reg_coe, skip_calib_coil, cc_coil, rNecho,ind_echo_recon, espirit_recon);
+    skip, freq_shift, echoes,reg_coe, skip_calib_coil, cc_coil, ...
+    rNecho, ind_echo_recon, espirit_recon)
 % [im, header, rhuser, data, data_grid] = recon_3dute_pfile(pfile,
 % coils, undersamp, skip, freq_shift, echoes)
 %
@@ -33,8 +34,10 @@ function [im, header] = precon_3dute_pfile_bartv300_allec(pfile, ...
 % rawheadX_cp (in the src dir) vs. rawheadX
 
 if ~isdeployed
-    addpath /home/pcao/src/bart-0.2.07/matlab/
-    addpath /home/pcao/src/bart-0.3.01/matlab/
+    % addpath /home/pcao/src/bart-0.2.07/matlab/
+    % addpath /home/pcao/src/bart-0.3.01/matlab/
+    addpath /working/larson/nikhil/bart-0.2.07/matlab
+    addpath /working/larson/nikhil/bart-0.3.01/matlab
     addpath /home/plarson/matlab/3DUTE-recon
 %    addpath /netopt/share/ese/ESE_DV26.0_R01/tools/matlab/read_MR/
 end
@@ -107,6 +110,9 @@ nfphases = header.image.fphase;
 
 data = read_MR_rawdata(pfile,'db', 1:nfphases, echoes, 1:nslices,coils); % <<< DCM >>> 20180312 -- replaced rawloadX_cp
 data = squeeze(data);
+if length(size(data)) == 4
+    data = reshape(data,[size(data,1) size(data,2) 1 size(data,3) size(data,4)]);
+end
 disp('READ DATA SIZE: ')
 disp(size(data))
 

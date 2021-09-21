@@ -102,6 +102,18 @@ imagesc(flip(abs(imallplus_all{2}(:,:,46,1))));colormap gray; colorbar
 subplot(133)
 imagesc(flip(abs(imallplus_all{1}(:,:,46,1))));colormap gray; colorbar
 
+%% save to nifti
+
+if exist('/working/larson/jingwen/030_UTE_Brain/test_data/Img_magni.nii.gz','file') ~= 2
+    Img = cat(4,imallplus_all{1}, imallplus_all{2}, imallplus_all{3});
+    Img(:,:,1:2,:) = [];
+    Img(:,:,end-1:end,:) = [];
+    nii = make_nii(abs(Img));
+    save_nii(nii,'/working/larson/jingwen/030_UTE_Brain/test_data/Img_magni.nii.gz');
+    nii = make_nii(angle(Img));
+    save_nii(nii,'/working/larson/jingwen/030_UTE_Brain/test_data/Img_phase.nii.gz');
+end
+
 %% B1 correction
 
 % AFI_nominal_flip = 44 * pi/180; % UTE AFI radial
@@ -160,6 +172,14 @@ imagesc(imrotate(squeeze(FA_map_ute_orientation(:,50,:,1)), 270), [0 1.5]); colo
 subplot(236)
 imagesc(imrotate(squeeze(FA_map_ute_orientation(50,:,:,1)), 270), [0 1.5]); colormap gray
 
+%% save nifti
+
+if exist('/working/larson/jingwen/030_UTE_Brain/test_data/B1map.nii.gz','file') ~= 2
+    Img = FA_map_ute_orientation/AFI_nominal_flip;
+    nii = make_nii(abs(Img));
+    save_nii(nii,'/working/larson/jingwen/030_UTE_Brain/test_data/B1map.nii.gz');
+end
+
 %% brainmask
 
 % Jingwen - add bet2
@@ -210,7 +230,13 @@ imagesc(imrotate(squeeze(abs(flip(im_masked{1}(:,50,:,1)))), 270));
 subplot(236)
 imagesc(imrotate(squeeze(abs(flip(im_masked{1}(50,:,:,1)))), 270));
 
-export_fig('brain_mask','-png','-transparent'); close;
+% export_fig('brain_mask','-png','-transparent'); close;
+
+if exist('/working/larson/jingwen/030_UTE_Brain/test_data/brain_mask.nii.gz','file') ~= 2
+    Img = brainmask_comb(:,:,3:92);
+    nii = make_nii(abs(Img));
+    save_nii(nii,'/working/larson/jingwen/030_UTE_Brain/test_data/brain_mask.nii.gz');
+end
 
 %% phase unwrapping
 
