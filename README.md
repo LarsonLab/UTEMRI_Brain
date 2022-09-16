@@ -13,7 +13,7 @@ Boucneau T, Pao C, Tang S, Han M, Xu D, Henry RG, Larson PEZ. In vivo characteri
 
 
 ## Image Reconstruciton
-Run the script `recon_script` which requires access ot the raw Pfiles and a list of TEs for each flip angle (from zenodo). Image Reconstruction requires the Berkeley Advanced Reconstruction Toolbox (BART) to be installed.
+Run the script `recon_script` which requires access ot the raw Pfiles and a list of TEs for each flip angle (from zenodo). Image Reconstruction requires the Berkeley Advanced Reconstruction Toolbox (BART) to be installed. It can be found here: https://mrirecon.github.io/bart/
 
 ### Orchestra toolbox
 This requires the Orchestra 1.7-1 sdk toolbox from GE which can be found here:https://www.gecares.com/s/GEHCForum. Extract the sdk into the same folder as the UTEMRI_Brain folder or add it to the matlab path with the command `addpath(genpath'/path/to/orchestra')`
