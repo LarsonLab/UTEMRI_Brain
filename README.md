@@ -19,7 +19,7 @@ Run the script `recon_script` which requires access ot the raw Pfiles and a list
 This requires the Orchestra 1.7-1 sdk toolbox from GE which can be found here:https://www.gecares.com/s/GEHCForum. Extract the sdk into the same folder as the UTEMRI_Brain folder or add it to the matlab path with the command `addpath(genpath'/path/to/orchestra')`
 
 
-## Example fitting script
+## Generate ultrashort-T2* fitted parameter maps
 Open `VFA_fitting_script.m` in MATLAB and follow through the code to run and generate fitted brain uT2 parameter maps. 
 
 Approximate computation time on a 32-core CPU takes 1-1.5 hours
