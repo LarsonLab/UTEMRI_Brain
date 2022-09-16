@@ -20,6 +20,6 @@ This requires the Orchestra 1.7-1 sdk toolbox from GE which can be found here:ht
 
 
 ## Example fitting script
-Open `VFA_fitting.m' script in MATLAB and follow through the code to run and generate fitted brain uT2 parameter maps. 
+Open `VFA_fitting_script.m` in MATLAB and follow through the code to run and generate fitted brain uT2 parameter maps. 
 
 Approximate computation time on a 32-core CPU takes 1-1.5 hours
