@@ -1,10 +1,10 @@
-# Brain ultrashort-T2 component measurements
-The purpose of this repoistory is to provide scripts and tools to generate fitted parameters to characterize the brain ultrashort-T2 component in healthy volunteers. It is currently implemented in MATLAB and includes code for reconstructing(?) and fitting parameter maps from brain UTE scans.
+# Brain ultrashort-T2* component measurements
+The purpose of this repoistory is to provide scripts and tools to generate fitted parameters to characterize the brain ultrashort-T2* component in healthy volunteers. It is currently implemented in MATLAB and includes code for reconstructing(?) and fitting parameter maps from brain UTE scans.
 
 It is an open-source collaborative platform to encourage anyone to contribute
 
 ## Citations
-Boucneau T, Pao C, Tang S, Han M, Xu D, Henry RG, Larson PEZ. In vivo characterization of brain ultrashort-T2 components. Magnetic Resonance in Medicine. 2018 Aug;80(2):726-735. https://doi.org/10.1002/mrm.27037
+Boucneau T, Pao C, Tang S, Han M, Xu D, Henry RG, Larson PEZ. In vivo characterization of brain ultrashort-T2* components. Magnetic Resonance in Medicine. 2018 Aug;80(2):726-735. https://doi.org/10.1002/mrm.27037
 
 
 ## Getting Started
