@@ -12,7 +12,7 @@ Boucneau T, Pao C, Tang S, Han M, Xu D, Henry RG, Larson PEZ. In vivo characteri
 2. Download the sample dataset which includes the raw data (pfile)  and reconstructions of 18-degree, 12-degree, 6-degree scans respectively as well as a reconstructed UTE_AFI.mat file for the B1+ map correction
 
 
-## Image Reconstruciton
+## Image Reconstruction
 Run the script `recon_script` which requires access ot the raw Pfiles and a list of TEs for each flip angle (from zenodo). Image Reconstruction requires the Berkeley Advanced Reconstruction Toolbox (BART) to be installed. It can be found here: https://mrirecon.github.io/bart/
 
 ### Orchestra toolbox
