@@ -1,11 +1,15 @@
 
-%set up IRT 
-% run irt\setup.m
+if (~exist('Gmri','file'))
+    %set up IRT 
+    currentDirectory = pwd;
+    cd('/home/xshen/Documents/MATLAB/irt/irt/'); setup
+    cd(currentDirectory)
+end
 
-di='/working/larson3/Xin/Preclinical_UTE/8/8/'; %directory with the data to reconstruct
+data_directory='/working/larson3/Xin/Preclinical_UTE/8/8/'; %directory with the data to reconstruct
 
 % make sure 'method' file is modified if necessary
-method_data=readparam_Bruker(fullfile(di,'method'));
+method_data=readparam_Bruker(fullfile(data_directory,'method'));
 if(contains(method_data.TITLE,'360'))
     fidname='rawdata.job0';
     pv360=1;
@@ -14,8 +18,8 @@ else
     pv360=0;
 end
 
-acqp=readparam_Bruker(fullfile(di,'acqp'));
-fid=getfid1(fullfile(di,fidname));
+acqp=readparam_Bruker(fullfile(data_directory,'acqp'));
+fid=getfid_Bruker(fullfile(data_directory,fidname));
 
 if pv360
     nch=method_data.PVM_EncNReceivers;
