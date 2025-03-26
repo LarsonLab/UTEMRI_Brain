@@ -1,12 +1,17 @@
+%% Setup parameters
+data_directory='/working/larson3/Xin/Preclinical_UTE/8/8/'; %directory with the data to reconstruct
+write_flag = 0;
 
+%% Setup Dependencies
 if (~exist('Gmri','file'))
     %set up IRT 
     currentDirectory = pwd;
-    cd('/home/xshen/Documents/MATLAB/irt/irt/'); setup
+    cd('/home/plarson/matlab/reconstruction/mirt/'); setup
     cd(currentDirectory)
 end
 
-data_directory='/working/larson3/Xin/Preclinical_UTE/8/8/'; %directory with the data to reconstruct
+
+%% Read data and metadata
 
 % make sure 'method' file is modified if necessary
 method_data=readparam_Bruker(fullfile(data_directory,'method'));
@@ -55,6 +60,7 @@ fid=reshape(fid, [datablock max([nslices specs]) proj]);
 fid=fid(1:(ns*nch*shots),:,:);
 fid=reshape(fid, [ns*shots nch max([nslices specs]) proj]);
 
+% k-space trajectory
 k=petalutegradsr(method_data,acqp);
 
 sikmax=1./(2*method_data.PVM_SpatResol);
@@ -87,6 +93,8 @@ szk = [split ns-split+1];
 % fidp= [3 split+2;   split ns];
 % szk = [split ns-split+1];
 
+
+%% Reconstruct data
 if shots==1 
     if dims==2 
         combined=zeros([Np Np slices 2]); %2 echoes
@@ -180,4 +188,8 @@ if shots==1
         end
     end
 end
-save('image_8.mat','combined')
+
+%% Write data
+if write_flag
+    save(fullfile(data_directory,'UTE_images.mat'),'combined')
+end
