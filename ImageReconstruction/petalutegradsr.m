@@ -1,4 +1,7 @@
 function [k,t,ktraj,g,gtraj,theoryktraj,theoryk,kgradtime,gradtime,kinttraj]=petalutegrads(meth,acqp)
+% Computes k-space trajectory for petal/rosette UTE based on Bruker
+% metadata
+
 %t is rftime 
 
 t=[];k=[];ktraj=[];g=[];gtraj=[];

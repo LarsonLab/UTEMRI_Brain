@@ -6,7 +6,7 @@ function [mrprot, mdh, fid] = rdMeas(varargin)
 % dependencies: parse_mrprot.m
 %               parse_xprot.m
 %               catstruct.m
-%               c_str.m
+%               c_str.m - removed
 %
 % Example for VA25 (meas.out, meas.asc):
 %		[mrprot, mdh, fid] = rdMeas('meas.out', 'meas.asc');
@@ -517,7 +517,8 @@ while (inchar ~= char(0))
     idx = idx + 1;
 end
 
-outstr = c_str(outstr);
+%outstr = c_str(outstr);
+outstr = strtok(outstr, char(0));
 
 %--------------------------------------------------------------------------
 function outstr = my_datestr(seconds)

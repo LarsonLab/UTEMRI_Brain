@@ -60,7 +60,7 @@ fid=reshape(fid, [datablock max([nslices specs]) proj]);
 fid=fid(1:(ns*nch*shots),:,:);
 fid=reshape(fid, [ns*shots nch max([nslices specs]) proj]);
 
-% k-space trajectory
+%% k-space trajectory
 k=petalutegradsr(method_data,acqp);
 
 sikmax=1./(2*method_data.PVM_SpatResol);
@@ -146,21 +146,7 @@ if shots==1
         
         for rec=1:2 % first and second echoes
             sz=[szk(rec) size(k,3)];
-            % kx3=zeros(sz);ky3=zeros(sz);kz3=zeros(sz);
-            % kx4=zeros(sz);ky4=zeros(sz);kz4=zeros(sz);
-            % 
-            % kx3(eout(rec,1):eout(rec,2),:)=k(1,ein(rec,1):ein(rec,2),:);
-            % ky3(eout(rec,1):eout(rec,2),:)=k(2,ein(rec,1):ein(rec,2),:);
-            % kz3(eout(rec,1):eout(rec,2),:)=k(3,ein(rec,1):ein(rec,2),:);
-            % kx4(eout(rec,1)-1:eout(rec,2),:)=k(1,ein(rec,1):ein(rec,2)+1,:);
-            % ky4(eout(rec,1)-1:eout(rec,2),:)=k(2,ein(rec,1):ein(rec,2)+1,:);
-            % kz4(eout(rec,1)-1:eout(rec,2),:)=k(3,ein(rec,1):ein(rec,2)+1,:);
-            % kx2=(kx3+kx4)/2;
-            % ky2=(ky3+ky4)/2;
-            % kz2=(kz3+kz4)/2;
-            % kx2=pi*kx2/max(kx2(:));
-            % ky2=pi*ky2/max(ky2(:));
-            % kz2=pi*kz2/max(kz2(:));
+
             kx2=zeros(sz);ky2=zeros(sz);kz2=zeros(sz);
         
             kx2(eout(rec,1):eout(rec,2),:)=k(1,ein(rec,1):ein(rec,2),:);
