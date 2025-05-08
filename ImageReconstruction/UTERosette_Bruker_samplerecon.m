@@ -97,7 +97,7 @@ szk = [split ns-split+1];
 %% Reconstruct data
 if shots==1 
     if dims==2 
-        combined=zeros([Np Np slices 2]); %2 echoes
+        image_all=zeros([Np Np slices 2]); %2 echoes
         mask2 = true([Np Np]);
         nufft2 = {[Np Np], [3 3], 2*[Np Np], [Np/2 Np/2], 'table', 2^10, 'minmax:kb'};
         f.basis = {'rect'};
@@ -129,16 +129,16 @@ if shots==1
                 nws_water_nuf=squeeze((recon(:,:,slice,:,1))).* exp( -1i * px );
                 ll=estimate_csm_walsh(nws_water_nuf);
                 ll(ll < eps) = 1;
-                combined(:,:,slice,rec)= sum(conj(ll).*nws_water_nuf ,3);
+                image_all(:,:,slice,rec)= sum(conj(ll).*nws_water_nuf ,3);
             end
             else
-                combined(:,:,slice)=recon;
+                image_all(:,:,slice)=recon;
             end
         end
         [~,b]=sort(method_data.PVM_ObjOrderList);
-        combined(:,:,:,:)=combined(:,:,b,:);
+        image_all(:,:,:,:)=image_all(:,:,b,:);
     else % 3D image 
-        combined=zeros([Np Np Np 2]); %2 echoes
+        image_all=zeros([Np Np Np 2]); %2 echoes
         mask2 = true([Np Np Np]);
         nufft2 = {[Np Np Np], [3 3 3], 2*[Np Np Np], [Np/2 Np/2 Np/2], 'table', 2^10, 'minmax:kb'};
         f.basis = {'rect'};
@@ -167,9 +167,9 @@ if shots==1
                 nws_water_nuf=squeeze((recon(:,:,:,:,1))).* exp( -1i * px );
                 ll=estimate_csm_walsh(nws_water_nuf);
                 ll(ll < eps) = 1;
-                combined(:,:,:,rec)= sum(conj(ll).*squeeze(nws_water_nuf),4);
+                image_all(:,:,:,rec)= sum(conj(ll).*squeeze(nws_water_nuf),4);
             else
-                combined(:,:,:,rec)= recon;
+                image_all(:,:,:,rec)= recon;
             end
         end
     end
@@ -177,5 +177,5 @@ end
 
 %% Write data
 if write_flag
-    save(fullfile(data_directory,'UTE_images.mat'),'combined')
+    save(fullfile(data_directory,'UTE_images.mat'),'image_all')
 end
