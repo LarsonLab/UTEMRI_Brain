@@ -371,5 +371,7 @@ end
 
 %%
 if write_flag
-    save(write_filename,'img_recon_TE1', 'img_recon_TE2');
+%    save(write_filename,'img_recon_TE1', 'img_recon_TE2');
+    niftiwrite(img_recon_TE1, [write_filename '_TE1'])
+    niftiwrite(img_recon_TE2, [write_filename '_TE2'])
 end
