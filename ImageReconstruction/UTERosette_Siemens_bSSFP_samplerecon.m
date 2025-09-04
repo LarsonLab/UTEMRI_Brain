@@ -35,7 +35,7 @@ nsamples = size(inref,1);
 
 %% Data modulations
 
-% phase correction for chopping(?)
+% phase correction for chopping of bSSFP
 inref(:,2:2:end,:) = -inref(:,2:2:end,:);
 
 f_offset = 300; %Hz
@@ -259,6 +259,8 @@ end
 % ksp_zerop = bart('resize -c 0 256 1 256 2 256', lowres_ksp);
 % sens = bart('ecalib -t 0.0001 -m1', ksp_zerop);
 % zz1_2(:,:,:)= sum(conj(sens) .*x ,4) ./ 1;
+
+% Coil sensitivity estimation and combination
 for jj=1:256
     px = angle(squeeze((x(:,:,jj,:))));
 % px = angle(squeeze((fid_data_block1(:,:,2,:,1))));
