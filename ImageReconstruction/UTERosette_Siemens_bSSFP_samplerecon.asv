@@ -1,4 +1,4 @@
-clear;
+clear all;
 
 data_file = '/working/larson3/Xin/VFA_MS_1/meas_MID03285_FID24049_fid_rosette_2mm_bSSFP_41k.dat';
 write_flag = 0;  write_filename = 'testrecon';
