@@ -41,101 +41,23 @@ t=(0:nsamples-1) * sampling_interval/2;  % us
 f_modulation = exp(1j*2*pi*frequency_offset*t'/1e6);
 inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
 
-%% k-space trajectory
+%% Generate k-space trajectories
 
-Kmax=matrix_size/fov/2;
-K_interval=Kmax*2/matrix_size;
-n=1:1:60;
-kr=n*K_interval;
-
-dead_time=0.2;%ms
-time_pre=0.2;%ms
-weighted=[0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95];
-weighted_cum=cumsum(weighted);
-for ll=1:190
-    alpha=pi/189*(ll-1);
-    for kk=1:378
-        kx(ll,kk,1)=0;
-        ky(ll,kk,1)=0;
-        kz(ll,kk,1)=0;
-        Gx(ll,kk,1)=0;
-        Gy(ll,kk,1)=0;
-        Gz(ll,kk,1)=0;
-        kx(ll,kk,2)=0;
-        ky(ll,kk,2)=0;
-        kz(ll,kk,2)=0;
-        Gx(ll,kk,2)=0;
-        Gy(ll,kk,2)=0;
-        Gz(ll,kk,2)=0;
-        Sx(ll,kk,1)=0;
-        Sy(ll,kk,1)=0;
-        Sz(ll,kk,1)=0;
-        phi=2*pi/378*(kk-1);
-        phi_next=2*pi/190*kk;
-        for jj=1:20
-            kx(ll,kk,jj+2)=Kmax*sin(pi/195*weighted_cum(jj))*cos(pi/195*weighted_cum(jj)+phi)*cos(-pi/2+alpha);
-            ky(ll,kk,jj+2)=Kmax*sin(pi/195*weighted_cum(jj))*sin(pi/195*weighted_cum(jj)+phi)*cos(-pi/2+alpha);
-            kz(ll,kk,jj+2)=Kmax*sin(pi/195*weighted_cum(jj))*sin(-pi/2+alpha);
-
-        end
-        for ii=11:184
-            kx(ll,kk,ii+11+1)=Kmax*sin(pi/195*ii)*cos(pi/195*ii+phi)*cos(-pi/2+alpha);
-            ky(ll,kk,ii+11+1)=Kmax*sin(pi/195*ii)*sin(pi/195*ii+phi)*cos(-pi/2+alpha);
-            kz(ll,kk,ii+11+1)=Kmax*sin(pi/195*ii)*sin(-pi/2+alpha);
-        end
-        for jj=1:20
-            kx(ll,kk,jj+195+1)=Kmax*sin(pi/195*(195-weighted_cum(21-jj)))*cos(pi/195*(195-weighted_cum(21-jj))+phi)*cos(-pi/2+alpha);
-            ky(ll,kk,jj+195+1)=Kmax*sin(pi/195*(195-weighted_cum(21-jj)))*sin(pi/195*(195-weighted_cum(21-jj))+phi)*cos(-pi/2+alpha);
-            kz(ll,kk,jj+195+1)=Kmax*sin(pi/195*(195-weighted_cum(21-jj)))*sin(-pi/2+alpha);
-        end
-    end
-end
-kx=permute(kx,[3,2,1]);
-ky=permute(ky,[3,2,1]);
-kz=permute(kz,[3,2,1]);
-
-Kx_new=zeros(432,378,190);
-Ky_new=zeros(432,378,190);
-Kz_new=zeros(432,378,190);
-for ii=1:431
-    if rem(ii,2)==1
-        Kx_new(ii,:,:)=kx(fix(ii/2)+1,:,:);
-        Ky_new(ii,:,:)=ky(fix(ii/2)+1,:,:);
-        Kz_new(ii,:,:)=kz(fix(ii/2)+1,:,:);
-    else
-        Kx_new(ii,:,:)=(kx(fix(ii/2),:,:)+kx(fix(ii/2)+1,:,:))/2;
-        Ky_new(ii,:,:)=(ky(fix(ii/2),:,:)+ky(fix(ii/2)+1,:,:))/2;
-        Kz_new(ii,:,:)=(kz(fix(ii/2),:,:)+kz(fix(ii/2)+1,:,:))/2;
-    end
-end
-Kx_new(432,:,:)=kx(216,:,:);
-Ky_new(432,:,:)=ky(216,:,:);
-Kz_new(432,:,:)=kz(216,:,:);
-
-Kx_2(:,:,:)=Kx_new(2:217,:,:);
-Ky_2(:,:,:)=Ky_new(2:217,:,:);
-Kz_2(:,:,:)=Kz_new(2:217,:,:);
-Kx_2=Kx_2(:);
-Ky_2=Ky_2(:);
-Kz_2=Kz_2(:);
-Kx_3=pi/max(abs(Kx_2))*Kx_2;
-Ky_3=pi/max(abs(Ky_2))*Ky_2;
-Kz_3=pi/max(abs(Kz_2))*Kz_2;
+[trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajectory(matrix_size, fov);
 
 %% Reconstruction
 
+trajectory = trajectory_te1;
 mask2 = true([nx ny nz]);
 nufft2 = {[nx ny nz], [3 3 3], 2*[nx ny nz], [nx/2 ny/2 nz/2 ], 'table', 2^10, 'minmax:kb'};
 f.basis = {'rect'};
-Gm1 = Gmri([Kx_3(:) Ky_3(:) Kz_3(:)]/(2*pi), mask2, 'fov', 256, 'basis', f.basis, 'nufft', nufft2);
-beta = 2^-21 * size(Kx_3,1)*1; % good for quadratic 'rect'
+Gm1 = Gmri([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*pi), mask2, 'fov', 256, 'basis', f.basis, 'nufft', nufft2);
+beta = 2^-21 * size(trajectory,1); % good for quadratic 'rect'
 R = Reg1(mask2, 'beta', beta);
-kdens=1*(ir_mri_density_comp([Kx_3(:) Ky_3(:) Kz_3(:)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
+kdens=(ir_mri_density_comp([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
 w2 = kdens/max(kdens(:));
 
 data_all=inref(3:218,:,:);
-clear data_first;
-clear data_second;
 data=squeeze(data_all); 
 clear data_all;
 D = reshape(data,size(data,1)*size(data,2),ncoils);

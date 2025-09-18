@@ -1,0 +1,129 @@
+function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajectory(matrix_size, fov)
+%GENERATE_DUAL_ECHO_ROSETTE_TRAJECTORY
+% Generates a two 3D rosette k-space trajectories for each echo of dual echo UTE sequence scaled to ±pi.
+%
+% INPUTS:
+%   matrix_size : number of samples along one spatial dimension
+%   fov         : field of view (in meters)
+%
+% OUTPUTS:
+%   trajectory_te1 : trajectory for first echo. mx3 array of column vectors of normalized k-space
+%                    coordinates in x, y, and z dimensions, respectively.
+%   trajectory_te2 : trajectory for second echo. mx3 array of column vectors of normalized k-space
+%                    coordinates in x, y, and z dimensions, respectively.
+
+
+    % Calculate kmax
+    kmax = matrix_size / fov / 2;
+
+    % Startup/wind-down weighting
+    weighted = [0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,...
+                0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95];
+    weighted_cum = cumsum(weighted);
+
+    % Initialize k-space arrays
+    kx = zeros(190,378,432);
+    ky = zeros(190,378,432);
+    kz = zeros(190,378,432);
+
+    % Build trajectory
+    for ll = 1:190
+        alpha = pi/189 * (ll - 1);
+
+        for kk = 1:378
+            phi = 2*pi/378 * (kk - 1);
+
+            % Startup region
+            for jj = 1:20
+                w = weighted_cum(jj);
+                ang = pi/195 * w;
+                kx(ll,kk,jj+2) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
+                ky(ll,kk,jj+2) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
+                kz(ll,kk,jj+2) = kmax*sin(ang)*sin(-pi/2+alpha);
+            end
+
+            % Main region
+            for ii = 11:184
+                ang = pi/195 * ii;
+                kx(ll,kk,ii+11+1) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
+                ky(ll,kk,ii+11+1) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
+                kz(ll,kk,ii+11+1) = kmax*sin(ang)*sin(-pi/2+alpha);
+            end
+
+            % Wind-down region
+            for jj = 1:20
+                w = 195 - weighted_cum(21 - jj);
+                ang = pi/195 * w;
+                kx(ll,kk,jj+195+1) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
+                ky(ll,kk,jj+195+1) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
+                kz(ll,kk,jj+195+1) = kmax*sin(ang)*sin(-pi/2+alpha);
+            end
+        end
+    end
+
+    % Reorder dimensions
+    kx = permute(kx,[3 2 1]);
+    ky = permute(ky,[3 2 1]);
+    kz = permute(kz,[3 2 1]);
+
+    % Interleave/average to 432x378x190
+    kx_interleaved = zeros(432,378,190);
+    ky_interleaved = zeros(432,378,190);
+    kz_interleaved = zeros(432,378,190);
+
+    for ii = 1:431
+        if rem(ii,2)==1
+            idx = fix(ii/2)+1;
+            kx_interleaved(ii,:,:) = kx(idx,:,:);
+            ky_interleaved(ii,:,:) = ky(idx,:,:);
+            kz_interleaved(ii,:,:) = kz(idx,:,:);
+        else
+            idx = fix(ii/2);
+            kx_interleaved(ii,:,:) = (kx(idx,:,:)+kx(idx+1,:,:))/2;
+            ky_interleaved(ii,:,:) = (ky(idx,:,:)+ky(idx+1,:,:))/2;
+            kz_interleaved(ii,:,:) = (kz(idx,:,:)+kz(idx+1,:,:))/2;
+        end
+    end
+
+    kx_interleaved(432,:,:) = kx(216,:,:);
+    ky_interleaved(432,:,:) = ky(216,:,:);
+    kz_interleaved(432,:,:) = kz(216,:,:);
+
+    % Select subset for first echo, flatten, and normalize to max = pi
+    kx_te1 = kx_interleaved(2:217,:,:);
+    ky_te1 = ky_interleaved(2:217,:,:);
+    kz_te1 = kz_interleaved(2:217,:,:);
+
+    kx_te1 = kx_te1(:);
+    ky_te1 = ky_te1(:);
+    kz_te1 = kz_te1(:);
+
+    kx_te1 = pi / max(abs(kx_te1)) * kx_te1;
+    ky_te1 = pi / max(abs(ky_te1)) * ky_te1;
+    kz_te1 = pi / max(abs(kz_te1)) * kz_te1;
+
+    % Select subset for second echo, flatten, and normalize to max = pi
+    kx_te2(:,:,:)=0.35*kx_interleaved(215:430,:,:)+0.65*kx_interleaved(216:431,:,:);
+    ky_te2(:,:,:)=0.35*ky_interleaved(215:430,:,:)+0.65*ky_interleaved(216:431,:,:);
+    kz_te2(:,:,:)=0.35*kz_interleaved(215:430,:,:)+0.65*kz_interleaved(216:431,:,:);
+    
+    kx_te2=kx_te2(:);
+    ky_te2=ky_te2(:);
+    kz_te2=kz_te2(:);
+    
+    kx_te2 = pi / max(abs(kx_te2)) * kx_te2;
+    ky_te2 = pi / max(abs(ky_te2)) * ky_te2;
+    kz_te2 = pi / max(abs(kz_te2)) * kz_te2;
+
+    % Store trajectories in 4D arrays
+    trajectory_te1 = zeros(length(kx_te1), 3);
+    trajectory_te2 = zeros(length(kx_te2), 3);
+
+    trajectory_te1(:,1) = kx_te1;
+    trajectory_te1(:,2) = ky_te1;
+    trajectory_te1(:,3) = kz_te1;
+
+    trajectory_te2(:,1) = kx_te2;
+    trajectory_te2(:,2) = ky_te2;
+    trajectory_te2(:,3) = kz_te2;
+end
