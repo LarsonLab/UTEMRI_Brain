@@ -15,12 +15,9 @@ end
 %% Read data
 [refmrprot, refmdh, inref] =rdMeas_dene(data_file);
 
-%% scan and recon parameters
-gamma=42.576; %kHZ/mT
-TR=2500; %us
-sampling_interval=10; %us
-FOV=0.24; %m
-T=1.9; %ms
+%% Scan and recon parameters
+sampling_interval=10; %in us
+fov=0.24; %field of view in m
 matrix_size=240; % for trajectory
 
 % for nufft
@@ -35,27 +32,23 @@ nsamples = size(inref,1);
 
 
 %% Data modulations
-
 % phase correction for chopping(?)
 inref(:,2:2:end,:) = -inref(:,2:2:end,:);
 
-f_offset = 300; %Hz
+frequency_offset = 300; %Hz
 
-t=[0:nsamples-1] * sampling_interval/2;  % us
-f_modulation = exp(1j*2*pi*f_offset*t'/1e6);
+t=(0:nsamples-1) * sampling_interval/2;  % us
+f_modulation = exp(1j*2*pi*frequency_offset*t'/1e6);
 inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
 
 %% k-space trajectory
 
-Kmax=matrix_size/FOV/2;
+Kmax=matrix_size/fov/2;
 K_interval=Kmax*2/matrix_size;
 n=1:1:60;
 kr=n*K_interval;
 
-Gr=kr*2*pi/(gamma*T);
 dead_time=0.2;%ms
-Gx_initial=2*kr/gamma/dead_time;
-Gy_initial=-Gr;
 time_pre=0.2;%ms
 weighted=[0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95];
 weighted_cum=cumsum(weighted);
@@ -100,7 +93,7 @@ end
 kx=permute(kx,[3,2,1]);
 ky=permute(ky,[3,2,1]);
 kz=permute(kz,[3,2,1]);
-%%
+
 Kx_new=zeros(432,378,190);
 Ky_new=zeros(432,378,190);
 Kz_new=zeros(432,378,190);
@@ -119,10 +112,9 @@ Kx_new(432,:,:)=kx(216,:,:);
 Ky_new(432,:,:)=ky(216,:,:);
 Kz_new(432,:,:)=kz(216,:,:);
 
-%%
-Kx_2(:,:,:)=Kx_new([2:217],:,:);
-Ky_2(:,:,:)=Ky_new([2:217],:,:);
-Kz_2(:,:,:)=Kz_new([2:217],:,:);
+Kx_2(:,:,:)=Kx_new(2:217,:,:);
+Ky_2(:,:,:)=Ky_new(2:217,:,:);
+Kz_2(:,:,:)=Kz_new(2:217,:,:);
 Kx_2=Kx_2(:);
 Ky_2=Ky_2(:);
 Kz_2=Kz_2(:);
@@ -140,22 +132,14 @@ beta = 2^-21 * size(Kx_3,1)*1; % good for quadratic 'rect'
 R = Reg1(mask2, 'beta', beta);
 kdens=1*(ir_mri_density_comp([Kx_3(:) Ky_3(:) Kz_3(:)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
 w2 = kdens/max(kdens(:));
-Kx_3_new=reshape(Kx_3,216,378,190);
-Ky_3_new=reshape(Ky_3,216,378,190);
-Kz_3_new=reshape(Kz_3,216,378,190);
-Kx_3_new_new=Kx_3_new(1:end,:,:);
-Ky_3_new_new=Ky_3_new(1:end,:,:);
-Kz_3_new_new=Kz_3_new(1:end,:,:);
-traj_uzay(1,:,:)=squeeze(reshape(Kx_3_new_new,216*378,190));
-traj_uzay(2,:,:)=squeeze(reshape(Ky_3_new_new,216*378,190));
-traj_uzay(3,:,:)=squeeze(reshape(Kz_3_new_new,216*378,190));
+
 data_all=inref(3:218,:,:);
 clear data_first;
 clear data_second;
 data=squeeze(data_all); 
 clear data_all;
 D = reshape(data,size(data,1)*size(data,2),ncoils);
-[U,S,V] = svd(D,'econ');  
+[~,S,V] = svd(D,'econ');  
 ncoils_compressed = max(find(diag(S)/S(1)>0.01)); %0.01
 %%
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
@@ -194,16 +178,6 @@ Kz_2=Kz_2(:);
 Kx_3=(9/9)*pi/max(abs(Kx_2))*Kx_2;
 Ky_3=(9/9)*pi/max(abs(Ky_2))*Ky_2;
 Kz_3=(9/9)*pi/max(abs(Kz_2))*Kz_2;
-
-Kx_3_new=reshape(Kx_3,216,378,190);
-Ky_3_new=reshape(Ky_3,216,378,190);
-Kz_3_new=reshape(Kz_3,216,378,190);
-Kx_3_new_new=Kx_3_new(1:end,:,:);
-Ky_3_new_new=Ky_3_new(1:end,:,:);
-Kz_3_new_new=Kz_3_new(1:end,:,:);
-traj_uzay(1,:,:)=squeeze(reshape(Kx_3_new_new,216*378,190));
-traj_uzay(2,:,:)=squeeze(reshape(Ky_3_new_new,216*378,190));
-traj_uzay(3,:,:)=squeeze(reshape(Kz_3_new_new,216*378,190));
 
 mask2 = true([nx ny nz]);
 nufft2 = {[nx ny nz], [3 3 3], 2*[nx ny nz], [nx/2 ny/2 nz/2 ], 'table', 2^10, 'minmax:kb'};
