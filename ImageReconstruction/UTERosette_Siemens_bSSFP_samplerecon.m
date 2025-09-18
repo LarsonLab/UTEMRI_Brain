@@ -25,7 +25,7 @@ nx=256;
 ny=256;
 nz=256;
 
-ncoils  =   size(inref,3);
+ncoils = size(inref,3);
 nt=1;
 npetals = size(inref,2);
 nsamples = size(inref,1);
@@ -35,6 +35,7 @@ nsamples = size(inref,1);
 % phase correction for chopping(?)
 inref(:,2:2:end,:) = -inref(:,2:2:end,:);
 
+% demodulate k-space data
 frequency_offset = 300; %Hz
 
 t=(0:nsamples-1) * sampling_interval/2;  % us
@@ -45,7 +46,7 @@ inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
 
 [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajectory(matrix_size, fov);
 
-%% Reconstruction
+%% Reconstruct first echo
 
 trajectory = trajectory_te1;
 mask2 = true([nx ny nz]);
@@ -87,34 +88,22 @@ nws_water_nuf=squeeze((x(:,:,jj,:))/1).* exp( -1i * px );
 img_recon(:,:,jj)= sum(conj(ll) .*nws_water_nuf ,3) ./ ll_sq;
 end
 
-%%  second TE
-clear Kx_2 Ky_2 Kz_2 Kx_3 Ky_3 Kz_3 data;
+%%  Reconstruct second echo
 
-Kx_2(:,:,:)=0.35*Kx_new([215:430],:,:)+0.65*Kx_new([216:431],:,:);
-Ky_2(:,:,:)=0.35*Ky_new([215:430],:,:)+0.65*Ky_new([216:431],:,:);
-Kz_2(:,:,:)=0.35*Kz_new([215:430],:,:)+0.65*Kz_new([216:431],:,:);
-
-Kx_2=Kx_2(:);
-Ky_2=Ky_2(:);
-Kz_2=Kz_2(:);
-Kx_3=(9/9)*pi/max(abs(Kx_2))*Kx_2;
-Ky_3=(9/9)*pi/max(abs(Ky_2))*Ky_2;
-Kz_3=(9/9)*pi/max(abs(Kz_2))*Kz_2;
-
+trajectory = trajectory_te2;
 mask2 = true([nx ny nz]);
 nufft2 = {[nx ny nz], [3 3 3], 2*[nx ny nz], [nx/2 ny/2 nz/2 ], 'table', 2^10, 'minmax:kb'};
 f.basis = {'rect'};
-Gm1 = Gmri([Kx_3(:) Ky_3(:) Kz_3(:)]/(2*pi), mask2, 'fov', 256, 'basis', f.basis, 'nufft', nufft2);
+Gm1 = Gmri([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*pi), mask2, 'fov', 256, 'basis', f.basis, 'nufft', nufft2);
 beta = 2^-21 * size(Kx_3,1)*1; % good for quadratic 'rect'
 R = Reg1(mask2, 'beta', beta);
-kdens=1*(ir_mri_density_comp([Kx_3(:) Ky_3(:) Kz_3(:)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
+kdens=(ir_mri_density_comp([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
 w2 = kdens/max(kdens(:));
-data_all=inref([217:432],:,:);
 
-data=squeeze(data_all); 
-clear data_all;
+data=squeeze(inref(217:432,:,:));
+
 D = reshape(data,size(data,1)*size(data,2),ncoils);
-[U,S,V] = svd(D,'econ');  
+[~,S,V] = svd(D,'econ');  
 
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
 %%
