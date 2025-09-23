@@ -18,15 +18,14 @@ end
 %% Scan and recon parameters
 sampling_interval=10; %in us
 fov=0.24; %field of view in m
-matrix_size=240; % for trajectory
+matrix_size=240; % number of samples along one spatial dimension
 
-% for nufft
+% reconstructed matrix size
 nx=256;
 ny=256;
 nz=256;
 
 ncoils = size(inref,3);
-nt=1;
 npetals = size(inref,2);
 nsamples = size(inref,1);
 
@@ -35,9 +34,8 @@ nsamples = size(inref,1);
 % phase correction for chopping(?)
 inref(:,2:2:end,:) = -inref(:,2:2:end,:);
 
-% demodulate k-space data
+% demodulate k-space data to account for off-resonance
 frequency_offset = 300; %Hz
-
 t=(0:nsamples-1) * sampling_interval/2;  % us
 f_modulation = exp(1j*2*pi*frequency_offset*t'/1e6);
 inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
@@ -45,6 +43,7 @@ inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
 %% Generate k-space trajectories
 
 [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajectory(matrix_size, fov);
+
 
 %% Reconstruct first echo
 
