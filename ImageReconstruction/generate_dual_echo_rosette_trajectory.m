@@ -12,7 +12,6 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
 %   trajectory_te2 : trajectory for second echo. mx3 array of column vectors of normalized k-space
 %                    coordinates in x, y, and z dimensions, respectively.
 
-
     % Calculate kmax
     kmax = matrix_size / fov / 2;
 
@@ -25,8 +24,15 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
     npoints_phi = 378; % number of points to sample phi angle
     ramp_weights = cumsum(linspace(0,1,npoints_ramp)); % defines the scaling of how trajectory is ramped up/down
     
+    % Set starting point and length of first and second echo along a petal
+    % (setting a fraction will incrementally shift the trajectory)
+    start_te1 = 2; % start of first echo
+    start_te2 = 215.65; % start of second echo
+    npoints_te1 = npoints_petal/2;
+    npoints_te2 = npoints_petal/2;
+    
     % Calculate number of points in linear section of each petal
-    npoints_linear = npoints_petal - (npoints_ramp*2 + npoints_zero_start);
+    npoints_linear = npoints_petal - (npoints_ramp*2 + npoints_zero_start); % number of points in linear section of each petal
     
     % Calculate index for start of each region of petal
     idx_ramp_up_start = npoints_zero_start + 1;
@@ -51,9 +57,9 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
     
             % Ramp-up region
             for jj = idx_ramp_up_start:idx_ramp_up_start + npoints_ramp - 1
-                % w = weighted_cum(jj);
                 weight = ramp_weights(pp);
                 pp = pp + 1;
+                
                 ang = linear_spacing * weight;
                 kx(ll,kk,jj) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
                 ky(ll,kk,jj) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
@@ -64,6 +70,7 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
             for jj = idx_linear_start:idx_linear_start + npoints_linear - 1
                 weight = weight + 1;
                 ang = linear_spacing * weight;
+                
                 kx(ll,kk,jj) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
                 ky(ll,kk,jj) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
                 kz(ll,kk,jj) = kmax*sin(ang)*sin(-pi/2+alpha);
@@ -78,6 +85,7 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
                     weight = pi/linear_spacing - ramp_weights(1);
                 end
                 qq = qq + 1;
+    
                 ang = pi/(195*2) * weight;
                 kx(ll,kk,jj) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
                 ky(ll,kk,jj) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
@@ -91,19 +99,27 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
     ky = permute(ky,[3 2 1]);
     kz = permute(kz,[3 2 1]);
     
-     % Normalize to max = pi
+    % Normalize to max = pi
     kx = pi / max(abs(kx(:))) * kx;
     ky = pi / max(abs(ky(:))) * ky;
     kz = pi / max(abs(kz(:))) * kz;
     
-    % Extract first and second echo trajectories
-    kx_te1 = kx(2:217,:,:);
-    ky_te1 = ky(2:217,:,:);
-    kz_te1 = kz(2:217,:,:);
+    % Extract first and second echo trajectories (including shifting)
+    shift_frac_te1 = start_te1 - floor(start_te1);
+    kx_te1 = (1-shift_frac_te1)*kx(floor(start_te1):floor(start_te1)+npoints_te1,:,:) + ...
+        shift_frac_te1*kx(floor(start_te1)+1:floor(start_te1)+1+npoints_te1,:,:);
+    ky_te1 = (1-shift_frac_te1)*ky(floor(start_te1):floor(start_te1)+npoints_te1,:,:) + ...
+        shift_frac_te1*ky(floor(start_te1)+1:floor(start_te1)+1+npoints_te1,:,:);
+    kz_te1 = (1-shift_frac_te1)*kz(floor(start_te1):floor(start_te1)+npoints_te1,:,:) + ...
+        shift_frac_te1*kz(floor(start_te1)+1:floor(start_te1)+1+npoints_te1,:,:);
     
-    kx_te2 = kx(216:431,:,:);
-    ky_te2 = ky(216:431,:,:);
-    kz_te2 = kz(216:431,:,:);
+    shift_frac_te2 = start_te2 - floor(start_te2);
+    kx_te2 = (1-shift_frac_te2)*kx(floor(start_te2):floor(start_te2)+npoints_te2,:,:) + ...
+        shift_frac_te2*kx(floor(start_te2)+1:floor(start_te2)+1+npoints_te2,:,:);
+    ky_te2 = (1-shift_frac_te2)*ky(floor(start_te2):floor(start_te2)+npoints_te2,:,:) + ...
+        shift_frac_te2*ky(floor(start_te2)+1:floor(start_te2)+1+npoints_te2,:,:);
+    kz_te2 = (1-shift_frac_te2)*kz(floor(start_te2):floor(start_te2)+npoints_te2,:,:) + ...
+        shift_frac_te2*kz(floor(start_te2)+1:floor(start_te2)+1+npoints_te2,:,:);
     
     % Store trajectories in 4D arrays
     trajectory_te1 = zeros(length(kx_te1(:)), 3);
