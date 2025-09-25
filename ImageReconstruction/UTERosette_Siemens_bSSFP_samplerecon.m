@@ -102,7 +102,7 @@ for jj=1:nz
     img_recon(:,:,jj)= sum(conj(ll) .*nws_water_nuf ,3) ./ ll_sq;
 end
 
-img_recon_te1 = img_recon;
+img_recon_te1 = flip(img_recon,1);
 
 %%  Reconstruct second echo
 trajectory = recon_parameters.trajectory_te2;
@@ -141,7 +141,7 @@ for jj=1:nz
     img_recon(:,:,jj)= sum(conj(ll) .*nws_water_nuf ,3) ./ ll_sq;
 end
 
-img_recon_te2 = img_recon;
+img_recon_te2 = flip(img_recon,1);
 
 %% Save outputs
 [~, twix_filename, file_ext] = fileparts(twix_path);
