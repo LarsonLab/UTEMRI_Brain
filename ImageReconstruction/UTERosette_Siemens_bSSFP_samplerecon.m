@@ -1,13 +1,13 @@
 clear;
 
 %% Select input and output configurations
-write_flag = 0; % 1 - save outputs, 0 - don't save output
+write_flag = 1; % 1 - save outputs, 0 - don't save output
 load_trajectory_flag = 0; % 1 - load existing trajectory, 0 - generate trajectory
 
-twix_path = ''; % path to twix file
+twix_path = '/data/larson9/ReVIVE/ReVIVE_S15/3_months/meas_MID02945_FID19495_fid_rosette_2mm_bSSFP_40k.dat'; % path to twix file
 trajectory_path = ''; % path to .mat trajectory file containing trajectory_te1 and trajectory_te2
 
-out_path = ''; % path to save output files to
+out_path = '/home/abechtel/Documents/UTERosette_bSSFP_sandbox/sandbox/data/ReVIVE_S15_test_subject/3_months/trajectory_ari/test3/'; % path to save output files to
 
 %% Set up Dependencies
 mirt_path = '/home/plarson/matlab/reconstruction/mirt/'; % path to mirt reconstruction toolbox
