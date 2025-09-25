@@ -100,9 +100,9 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
     kz = permute(kz,[3 2 1]);
     
     % Normalize to max = pi
-    % kx = pi / max(abs(kx(:))) * kx;
-    % ky = pi / max(abs(ky(:))) * ky;
-    % kz = pi / max(abs(kz(:))) * kz;
+    kx = pi / max(abs(kx(:))) * kx;
+    ky = pi / max(abs(ky(:))) * ky;
+    kz = pi / max(abs(kz(:))) * kz;
     
     % Extract first and second echo trajectories (including shifting)
     shift_frac_te1 = start_te1 - floor(start_te1);
@@ -120,15 +120,6 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
         shift_frac_te2*ky(floor(start_te2)+1:floor(start_te2)+npoints_te2,:,:);
     kz_te2 = (1-shift_frac_te2)*kz(floor(start_te2):floor(start_te2)+npoints_te2-1,:,:) + ...
         shift_frac_te2*kz(floor(start_te2)+1:floor(start_te2)+npoints_te2,:,:);
-
-    % Normalize to max = pi
-    kx_te1 = pi / max(abs(kx_te1(:))) * kx_te1;
-    ky_te1 = pi / max(abs(ky_te1(:))) * ky_te1;
-    kz_te1 = pi / max(abs(kz_te1(:))) * kz_te1;
-    
-    kx_te2 = pi / max(abs(kx_te2(:))) * kx_te2;
-    ky_te2 = pi / max(abs(ky_te2(:))) * ky_te2;
-    kz_te2 = pi / max(abs(kz_te2(:))) * kz_te2;
         
     % Store trajectories in 4D arrays
     trajectory_te1 = zeros(length(kx_te1(:)), 3);
