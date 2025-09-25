@@ -24,13 +24,13 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
     npoints_phi = 378; % number of points to sample phi angle
 
     % Set weights to define scalinig of how trajectory is ramped up/down
-    preweights_short = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, ...
-        0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95];
-    preweights = zeros(1, 2*length(preweights_short));
-    preweights(1:2:end) = preweights_short;
-    preweights(2:2:end) = preweights_short;
-    ramp_weights = cumsum(preweights);
-    % ramp_weights = cumsum(linspace(0.05,0.95,npoints_ramp));  
+    % preweights_short = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, ...
+    %     0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95];
+    % preweights = zeros(1, 2*length(preweights_short));
+    % preweights(1:2:end) = preweights_short;
+    % preweights(2:2:end) = preweights_short;
+    % ramp_weights = cumsum(preweights);
+    ramp_weights = cumsum(linspace(0.05,0.95,npoints_ramp));  
     
     % Set starting point and length of first and second echo along a petal
     % (setting a fraction will incrementally shift the trajectory)
