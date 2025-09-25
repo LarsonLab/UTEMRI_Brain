@@ -51,7 +51,7 @@ inref(:,2:2:end,:) = -inref(:,2:2:end,:);
 recon_parameters.frequency_offset = 300; %Hz
 t=(0:recon_parameters.nsamples_per_petal-1) * recon_parameters.sampling_interval/2;  % us
 recon_parameters.f_modulation = exp(1j*2*pi*recon_parameters.frequency_offset*t'/1e6);
-inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
+inref = inref .* repmat(recon_parameters.f_modulation, [1, recon_parameters.npetals, recon_parameters.ncoils]);
 
 %% Get k-space trajectories
 
@@ -76,7 +76,7 @@ kdens=(ir_mri_density_comp([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*
 w2 = kdens/max(kdens(:));
 
 data=squeeze(inref(recon_parameters.start_te1:recon_parameters.start_te1 + recon_parameters.nsamples_per_petal/2 - 1,:,:));
-D = reshape(data,size(data,1)*size(data,2),ncoils);
+D = reshape(data,size(data,1)*size(data,2),recon_parameters.ncoils);
 [~,S,V] = svd(D,'econ');  
 ncoils_compressed = max(find(diag(S)/S(1)>0.01)); %0.01
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
@@ -116,7 +116,7 @@ kdens=(ir_mri_density_comp([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*
 w2 = kdens/max(kdens(:));
 
 data=squeeze(inref(recon_parameters.start_te2:recon_parameters.start_te2 + recon_parameters.nsamples_per_petal/2 - 1,:,:));
-D = reshape(data,size(data,1)*size(data,2),ncoils);
+D = reshape(data,size(data,1)*size(data,2),recon_parameters.ncoils);
 [~,S,V] = svd(D,'econ');  
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
 
