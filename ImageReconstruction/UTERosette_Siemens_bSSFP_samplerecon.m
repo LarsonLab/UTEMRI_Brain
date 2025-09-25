@@ -4,10 +4,10 @@ clear;
 write_flag = 0; % 1 - save outputs, 0 - don't save output
 load_trajectory_flag = 0; % 1 - load existing trajectory, 0 - generate trajectory
 
-out_path = ''; % path to save output files to
-
 twix_path = ''; % path to twix file
 trajectory_path = ''; % path to .mat trajectory file containing trajectory_te1 and trajectory_te2
+
+out_path = ''; % path to save output files to
 
 %% Set up Dependencies
 mirt_path = '/home/plarson/matlab/reconstruction/mirt/'; % path to mirt reconstruction toolbox
@@ -149,5 +149,7 @@ recon_parameters.twix_filename = [twix_filename, file_ext];
 
 if write_flag
     save([out_path 'img_recon.mat'],'img_recon_te1', 'img_recon_te2');
+    niftiwrite(img_recon_te1, [out_path 'img_recon_te1.nii']);
+    niftiwrite(img_recon_te2, [out_path 'img_recon_te2.nii']);
     save([out_path 'recon_parameters.mat'], 'recon_parameters');
 end
