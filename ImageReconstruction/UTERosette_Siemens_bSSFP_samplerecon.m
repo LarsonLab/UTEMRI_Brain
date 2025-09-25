@@ -41,7 +41,7 @@ recon_parameters.nsamples_per_petal = size(inref,1);
 
 % calculate starting data point of each echo (along each petal in rosette)
 recon_parameters.start_te1 = recon_parameters.npoints_skip_te1 + 1;
-recon_parameters.start_te2 = nsamples/2 + recon_parameters.npoints_skip_te2 + 1;
+recon_parameters.start_te2 = recon_parameters.nsamples_per_petal/2 + recon_parameters.npoints_skip_te2 + 1;
 
 %% Data modulations
 % phase correction for chopping(?)
@@ -49,7 +49,7 @@ inref(:,2:2:end,:) = -inref(:,2:2:end,:);
 
 % demodulate k-space data to account for off-resonance
 recon_parameters.frequency_offset = 300; %Hz
-t=(0:nsamples-1) * recon_parameters.sampling_interval/2;  % us
+t=(0:recon_parameters.nsamples_per_petal-1) * recon_parameters.sampling_interval/2;  % us
 recon_parameters.f_modulation = exp(1j*2*pi*recon_parameters.frequency_offset*t'/1e6);
 inref = inref .* repmat(f_modulation, [1, npetals, ncoils]);
 
@@ -75,7 +75,7 @@ R = Reg1(mask, 'beta', beta);
 kdens=(ir_mri_density_comp([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
 w2 = kdens/max(kdens(:));
 
-data=squeeze(inref(recon_parameters.start_te1:recon_parameters.start_te1 + nsamples/2 - 1,:,:));
+data=squeeze(inref(recon_parameters.start_te1:recon_parameters.start_te1 + recon_parameters.nsamples_per_petal/2 - 1,:,:));
 D = reshape(data,size(data,1)*size(data,2),ncoils);
 [~,S,V] = svd(D,'econ');  
 ncoils_compressed = max(find(diag(S)/S(1)>0.01)); %0.01
@@ -115,7 +115,7 @@ R = Reg1(mask, 'beta', beta);
 kdens=(ir_mri_density_comp([trajectory(:,1) trajectory(:,2) trajectory(:,3)]/(2*pi),'pipe','G',Gm1.arg.Gnufft,'arg_pipe',{'fov',256}))';
 w2 = kdens/max(kdens(:));
 
-data=squeeze(inref(recon_parameters.start_te2:recon_parameters.start_te2 + nsamples/2 - 1,:,:));
+data=squeeze(inref(recon_parameters.start_te2:recon_parameters.start_te2 + recon_parameters.nsamples_per_petal/2 - 1,:,:));
 D = reshape(data,size(data,1)*size(data,2),ncoils);
 [~,S,V] = svd(D,'econ');  
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
