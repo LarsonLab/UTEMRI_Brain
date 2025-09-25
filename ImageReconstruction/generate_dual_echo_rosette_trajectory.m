@@ -26,8 +26,8 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
     
     % Set starting point and length of first and second echo along a petal
     % (setting a fraction will incrementally shift the trajectory)
-    start_te1 = 2; % start of first echo
-    start_te2 = 215.65; % start of second echo
+    start_te1 = 1; % start of first echo
+    start_te2 = 214.65; % start of second echo
     npoints_te1 = npoints_petal/2;
     npoints_te2 = npoints_petal/2;
     
