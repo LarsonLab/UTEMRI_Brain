@@ -81,7 +81,7 @@ D = reshape(data,size(data,1)*size(data,2),recon_parameters.ncoils);
 ncoils_compressed = max(find(diag(S)/S(1)>0.01)); %0.01
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
 
-x = zeros(size(mask), ncoils_compressed);
+x = zeros(size(mask,1), size(mask,2), size(mask,3), ncoils_compressed);
 for ncoil=1:ncoils_compressed
     lll=data(:,:,ncoil);
     xcp=(Gm1'*(((lll(:)).*(w2)')));
@@ -120,7 +120,7 @@ D = reshape(data,size(data,1)*size(data,2),recon_parameters.ncoils);
 [~,S,V] = svd(D,'econ');  
 data = reshape(D*V(:,1:ncoils_compressed),size(data,1),size(data,2),ncoils_compressed);
 
-x = zeros(size(mask), ncoils_compressed);
+x = zeros(size(mask,1), size(mask,2), size(mask,3), ncoils_compressed);
 for ncoil=1:ncoils_compressed
     lll=data(:,:,ncoil);
     xcp=(Gm1'*(((lll(:)).*(w2)')));
