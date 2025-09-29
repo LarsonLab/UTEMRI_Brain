@@ -86,17 +86,30 @@ flirt -in "${TE2_TO_MPRAGE}.nii" -ref "${TE1_TO_MPRAGE}.nii" -out "${TE2_TO_MPRA
 # Apply bias field correction to registered images using FSL fast
 echo "Bias field correcting te1_to_MPRAGE..."
 fast -B -o "${WORKDIR}/fast_te1" "${TE1_TO_MPRAGE}.nii"
-TE1_RESTORE_CAND="${WORKDIR}/fast_te1_restore.nii"
-[ ! -f "${TE1_RESTORE_CAND}" ] && TE1_RESTORE_CAND="${WORKDIR}/fast_te1_restore.nii.gz"
-cp "${TE1_RESTORE_CAND}" "${OUTDIR}/te1_to_MPRAGE_restore.nii"
+if [ -f "${WORKDIR}/fast_te1_restore.nii.gz" ]; then
+    TE1_RESTORE_CAND="${WORKDIR}/fast_te1_restore.nii.gz"
+elif [ -f "${WORKDIR}/fast_te1_restore.nii" ]; then
+    TE1_RESTORE_CAND="${WORKDIR}/fast_te1_restore.nii"
+else
+    echo "Error: FAST did not produce a restore file for TE1" >&2
+    exit 1
+fi
+fslchfiletype NIFTI "${TE1_RESTORE_CAND}" "${OUTDIR}/te1_to_MPRAGE_restore"
 TE1_RESTORE="${OUTDIR}/te1_to_MPRAGE_restore.nii"
 
 echo "Bias field correcting te2_to_MPRAGE_to_te1..."
 fast -B -o "${WORKDIR}/fast_te2" "${TE2_TO_MPRAGE_TO_TE1}.nii"
-TE2_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii"
-[ ! -f "${TE2_RESTORE_CAND}" ] && TE2_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii.gz"
-cp "${TE2_RESTORE_CAND}" "${OUTDIR}/te2_to_MPRAGE_to_te1_restore.nii"
-TE2_RESTORE="${OUTDIR}/te2_to_MPRAGE_to_te1_restore.nii"
+if [ -f "${WORKDIR}/fast_te2_restore.nii.gz" ]; then
+    TE1_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii.gz"
+elif [ -f "${WORKDIR}/fast_te2_restore.nii" ]; then
+    TE1_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii"
+else
+    echo "Error: FAST did not produce a restore file for TE2" >&2
+    exit 1
+fi
+fslchfiletype NIFTI "${TE1_RESTORE_CAND}" "${OUTDIR}/te2_to_MPRAGE_restore"
+TE2_RESTORE="${OUTDIR}/te2_to_MPRAGE_restore.nii"
+
 
 # Normalize TE2 image and compute uT2 map
 TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_te1_restore_normalized.nii"
