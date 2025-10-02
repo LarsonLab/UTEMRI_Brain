@@ -17,9 +17,9 @@ config = base_config();
 % config.recon.npoints_skip_te2 = 0;
 
 % Open parallel pool (adjust worker count to SLURM allocation)
-poolobj = gcp('nocreate');
-if isempty(poolobj)
-    parpool('threads'); % or parpool(N) if you know worker count
+nworkers = str2double(getenv('SLURM_CPUS_PER_TASK'));
+if isempty(gcp('nocreate'))
+    parpool(nworkers);
 end
 
 % Setup dependencies
