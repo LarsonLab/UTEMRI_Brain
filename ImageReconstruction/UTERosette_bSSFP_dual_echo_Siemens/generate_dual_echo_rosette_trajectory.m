@@ -26,7 +26,7 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
 %                    coordinates in x, y, and z dimensions, respectively.
 
     % Calculate spacing of points in linear section of each petal
-    linear_spacing = (pi - ramp_ang*2)/(traj.npoints_petal ...
+    linear_spacing = (pi - traj.ramp_ang*2)/(traj.npoints_petal ...
         - traj.npoints_ramp*2-traj.npoints_zero_start);
     
     % Scale ramp up/down weights
