@@ -69,7 +69,7 @@ function [img_recon_te1, img_recon_te2, ...
     
     % -- Create k-space trajectories --
     [trajectory_te1, trajectory_te2] = ...
-        generate_dual_echo_rosette_trajectory(config.recon.matrix_size, config.recon.fov);
+        generate_dual_echo_rosette_trajectory(config.recon.traj);
     
     % -- Reconstruction --
     % first echo

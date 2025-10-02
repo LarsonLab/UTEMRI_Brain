@@ -4,7 +4,6 @@ function img_recon = reconstruct_coil_compressed(data, trajectory, nx, ny, nz)
 %
 %   INPUTS:
 %       data             - Raw k-space data array, typically size 
-%       recon_parameters - Struct with reconstruction parameters:
 %       trajectory       - non-Cartesian k-space trajectory. [npoints x 3] array of column vectors of k-space
 %                          coordinates in x, y, and z dimensions, respectively.
 %       nx, ny, nz       - Output image matrix size

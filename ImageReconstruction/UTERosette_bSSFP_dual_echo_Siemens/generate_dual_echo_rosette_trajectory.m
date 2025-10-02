@@ -1,10 +1,23 @@
-function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajectory(matrix_size, fov)
+function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajectory(traj)
 %GENERATE_DUAL_ECHO_ROSETTE_TRAJECTORY
 % Generates a two 3D rosette k-space trajectories for each echo of dual echo UTE sequence scaled to ±pi.
 %
 % INPUTS:
-%   matrix_size : number of samples along one spatial dimension
-%   fov         : field of view (in meters)
+%   traj   - Struct containing configurable trajectory parameters:
+%       .npoints_petal      : Number of points per rosette petal
+%       .npoints_ramp       : Number of points in non linear ramp up/down region of each petal
+%       .ramp_ang           : Angle spanned by non linear ramp up/down region of each petal
+%                             (NOTE: must be <=pi/2)
+%       .ramp_weights       : [1 x npoints_ramp] array of weights to define ramp up/down scaling.
+%                             (NOTE: should be monotonically increasing
+%                             normalized to max(ramp_weights)=1
+%       .npoints_alpha      : Number of points to sample alpha angle 
+%                             (rotation of petals relative to the z axis through different polar angles)
+%       .npoints_phi        : Number of points to sample phi angle 
+%                             (rotation of petals in xy plane about the z axis)
+%       .npoints_zero_start : Number of zero points in beginning of each petal
+%       .start_te1          : Start point of first echo (setting a fraction will incrementally shift the trajectory)
+%       .start_te2          : Start point of second echo (setting a fraction will incrementally shift the trajectory)
 %
 % OUTPUTS:
 %   trajectory_te1 : trajectory for first echo. mx3 array of column vectors of normalized k-space
@@ -12,66 +25,53 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
 %   trajectory_te2 : trajectory for second echo. mx3 array of column vectors of normalized k-space
 %                    coordinates in x, y, and z dimensions, respectively.
 
-    % Calculate kmax
-    kmax = matrix_size / fov / 2;
-
-    % Set trajectory parameters
-    npoints_petal = 432; % number of points per petal
-    npoints_zero_start = 2; % number of zero points in beginning of each petal
-    linear_spacing = pi/390; % spacing of points in linear section of each petal
-    npoints_ramp = 40; % number of points in non linear ramp up/down of each petal
-    npoints_alpha = 190; % number of points to sample alpha angle
-    npoints_phi = 378; % number of points to sample phi angle
-
-    % Set weights to define scalinig of how trajectory is ramped up/down
-    % preweights_short = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, ...
-    %     0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95];
-    % preweights = zeros(1, 2*length(preweights_short));
-    % preweights(1:2:end) = preweights_short;
-    % preweights(2:2:end) = preweights_short;
-    % ramp_weights = cumsum(preweights);
-    ramp_weights = cumsum(linspace(0.05,0.95,npoints_ramp));  
+    % Calculate spacing of points in linear section of each petal
+    linear_spacing = (pi - ramp_ang*2)/(traj.npoints_petal ...
+        - traj.npoints_ramp*2-traj.npoints_zero_start);
+    
+    % Scale ramp up/down weights
+    ramp_weights = traj.ramp_weights * traj.ramp_ang/linear_spacing;
     
     % Set starting point and length of first and second echo along a petal
-    % (setting a fraction will incrementally shift the trajectory)
-    start_te1 = 1; % start of first echo
-    start_te2 = 214.65; % start of second echo
-    npoints_te1 = npoints_petal/2;
-    npoints_te2 = npoints_petal/2;
+    start_te1 = traj.start_te1; % start of first echo
+    start_te2 = traj.start_te2; % start of second echo
+    npoints_te1 = traj.npoints_petal/2;
+    npoints_te2 = traj.npoints_petal/2;
     
     % Calculate number of points in linear section of each petal
-    npoints_linear = npoints_petal - (npoints_ramp*2 + npoints_zero_start); % number of points in linear section of each petal
+    npoints_linear = traj.npoints_petal - ...
+        (traj.npoints_ramp*2 + traj.npoints_zero_start);
     
     % Calculate index for start of each region of petal
-    idx_ramp_up_start = npoints_zero_start + 1;
-    idx_linear_start = idx_ramp_up_start + npoints_ramp;
+    idx_ramp_up_start = traj.npoints_zero_start + 1;
+    idx_linear_start = idx_ramp_up_start + traj.npoints_ramp;
     idx_ramp_down_start = idx_linear_start + npoints_linear;
     
     % Initialize k-space arrays
-    kx = zeros(npoints_alpha,npoints_phi,npoints_petal);
-    ky = zeros(npoints_alpha,npoints_phi,npoints_petal);
-    kz = zeros(npoints_alpha,npoints_phi,npoints_petal);
+    kx = zeros(traj.npoints_alpha,traj.npoints_phi,traj.npoints_petal);
+    ky = zeros(traj.npoints_alpha,traj.npoints_phi,traj.npoints_petal);
+    kz = zeros(traj.npoints_alpha,traj.npoints_phi,traj.npoints_petal);
     
     % Build trajectory
-    for ll = 1:npoints_alpha
-        alpha = pi/(npoints_alpha-1) * (ll - 1);
+    for ll = 1:traj.npoints_alpha
+        alpha = pi/(traj.npoints_alpha-1) * (ll - 1);
     
-        for kk = 1:npoints_phi
-            phi = 2*pi/npoints_phi * (kk - 1);
+        for kk = 1:traj.npoints_phi
+            phi = 2*pi/traj.npoints_phi * (kk - 1);
     
             % Initialize index counters for ramp weight array
             pp = 1;
             qq = 1;
     
             % Ramp-up region
-            for jj = idx_ramp_up_start:idx_ramp_up_start + npoints_ramp - 1
+            for jj = idx_ramp_up_start:idx_ramp_up_start + traj.npoints_ramp - 1
                 weight = ramp_weights(pp);
                 pp = pp + 1;
                 
                 ang = linear_spacing * weight;
-                kx(ll,kk,jj) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
-                ky(ll,kk,jj) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
-                kz(ll,kk,jj) = kmax*sin(ang)*sin(-pi/2+alpha);
+                kx(ll,kk,jj) = sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
+                ky(ll,kk,jj) = sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
+                kz(ll,kk,jj) = sin(ang)*sin(-pi/2+alpha);
             end
     
             % Linear region
@@ -79,13 +79,13 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
                 weight = weight + 1;
                 ang = linear_spacing * weight;
                 
-                kx(ll,kk,jj) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
-                ky(ll,kk,jj) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
-                kz(ll,kk,jj) = kmax*sin(ang)*sin(-pi/2+alpha);
+                kx(ll,kk,jj) = sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
+                ky(ll,kk,jj) = sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
+                kz(ll,kk,jj) = sin(ang)*sin(-pi/2+alpha);
             end
     
             % Ramp-down region
-            for jj = idx_ramp_down_start:idx_ramp_down_start + npoints_ramp - 1
+            for jj = idx_ramp_down_start:idx_ramp_down_start + traj.npoints_ramp - 1
                 if qq < length(ramp_weights)
                     weight = pi/linear_spacing - ramp_weights(end - qq);
                 else
@@ -94,10 +94,10 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
                 end
                 qq = qq + 1;
     
-                ang = pi/(195*2) * weight;
-                kx(ll,kk,jj) = kmax*sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
-                ky(ll,kk,jj) = kmax*sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
-                kz(ll,kk,jj) = kmax*sin(ang)*sin(-pi/2+alpha);
+                ang = linear_spacing * weight;
+                kx(ll,kk,jj) = sin(ang)*cos(ang+phi)*cos(-pi/2+alpha);
+                ky(ll,kk,jj) = sin(ang)*sin(ang+phi)*cos(-pi/2+alpha);
+                kz(ll,kk,jj) = sin(ang)*sin(-pi/2+alpha);
             end
         end
     end
