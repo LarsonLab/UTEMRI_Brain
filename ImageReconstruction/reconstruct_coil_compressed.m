@@ -16,7 +16,7 @@ function img_recon = reconstruct_coil_compressed(data, trajectory, nx, ny, nz)
 %       - MIRT toolbox
 %       - Walsh coil sensitivity estimation (estimate_csm_walsh)
 
-    % NUFFT and Regularization setup
+    % NUFFT and regularization setup
     mask = true([nx ny nz]);    
     nufft = {[nx ny nz], [3 3 3], 2*[nx ny nz], [nx/2 ny/2 nz/2], ...
              'table', 2^10, 'minmax:kb'};  
@@ -36,8 +36,8 @@ function img_recon = reconstruct_coil_compressed(data, trajectory, nx, ny, nz)
     D = reshape(data_compressed, size(data_compressed,1)*size(data_compressed,2), size(data,3));
     [~,S,V] = svd(D,'econ');  
     ncoils_compressed = max(find(diag(S)/S(1) > 0.01)); % Keep >1% energy
-    
-    % Project raw data into reduced coil basis
+    fprintf('Using %d compressed coils (out of %d original coils)\n', ...
+            ncoils_compressed, size(data,3));
     data_compressed = reshape(D * V(:,1:ncoils_compressed), ...
                    size(data_compressed,1), size(data_compressed,2), ncoils_compressed);
     
@@ -45,15 +45,10 @@ function img_recon = reconstruct_coil_compressed(data, trajectory, nx, ny, nz)
     x = zeros(nx, ny, nz, ncoils_compressed);   
     for ncoil = 1:ncoils_compressed
         lll = data_compressed(:,:,ncoil);
-        
-        % Adjoint NUFFT backprojection (with density compensation)
         xcp = (Gm1' * ((lll(:)) .* (w)'));
-
-        % One iteration of PCG reconstruction with quadratic penalty
         xpcg = qpwls_pcg1(xcp, Gm1, 1, lll(:), R.C, 'niter', 1);
-        
-        % Embed reconstructed image into 3D array
         x(:,:,:,ncoil) = embed(xpcg, mask(:,:,:));
+        ncoil
     end
     
     % Coil combination using Walsh method
@@ -74,7 +69,7 @@ function img_recon = reconstruct_coil_compressed(data, trajectory, nx, ny, nz)
         img_recon(:,:,jj) = sum(conj(ll) .* nws_water_nuf ,3) ./ ll_sq;
     end
     
-    % flip reconstructed image
+    % Flip reconstructed image
     img_recon = flip(img_recon,1);
 
 end
