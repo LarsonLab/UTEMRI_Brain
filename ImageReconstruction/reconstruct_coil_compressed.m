@@ -67,8 +67,5 @@ function img_recon = reconstruct_coil_compressed(data, trajectory, nx, ny, nz)
         nws_water_nuf = squeeze(x(:,:,jj,:)) .* exp(-1i * px);
         img_recon(:,:,jj) = sum(conj(ll) .* nws_water_nuf ,3) ./ ll_sq;
     end
-    
-    % Flip reconstructed image
-    img_recon = flip(img_recon,1);
 
 end
