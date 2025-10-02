@@ -16,14 +16,22 @@ config = base_config();
 % config.recon.npoints_skip_te1 = 2;
 % config.recon.npoints_skip_te2 = 0;
 
-nscans = size(scans,1);
-
 % Open parallel pool (adjust worker count to SLURM allocation)
 poolobj = gcp('nocreate');
 if isempty(poolobj)
     parpool('threads'); % or parpool(N) if you know worker count
 end
 
+% Setup dependencies
+if (~exist('Gmri','file'))
+    %set up mirt recon toolbox
+    currentDirectory = pwd;
+    cd('/home/plarson/matlab/reconstruction/mirt/'); setup
+    cd(currentDirectory)
+end
+
+% Run reconstruction in parallel
+nscans = size(scans,1);
 input = scans(:,1);
 outdir = scans(:,2);
 parfor i = 1:nscans
