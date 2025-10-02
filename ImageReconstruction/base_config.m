@@ -20,7 +20,7 @@ function config = base_config()
     config.recon.traj.npoints_petal = 432; % number of points per rosette petal
     config.recon.traj.npoints_ramp = 40; % number of points in non linear ramp up/down region of each petal
     config.recon.traj.ramp_ang = 20*pi/390; % angle spanned by non linear ramp up/down region of each petal
-    ramp_weights = cumsum(linspace(0.05,0.95,config.recon.traj.npoints_ramp.npoints_ramp));
+    ramp_weights = cumsum(linspace(0.05,0.95,config.recon.traj.npoints_ramp));
     config.recon.traj.ramp_weights = ramp_weights/ramp_weights(end); % [1 x npoints_ramp] 
                                                                      % array of weights to define ramp up/down scaling.
     config.recon.traj.npoints_alpha = 190; % number of points to sample alpha angle 
