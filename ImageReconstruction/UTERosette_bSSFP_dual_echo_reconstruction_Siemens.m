@@ -28,6 +28,7 @@ function [img_recon_te1, img_recon_te2, ...
 %   trajectory_te2   - K-space trajectory for second echo
 %
 % Saves the following to config.io.out_path:
+%   - 'config.mat' containing configuration struct
 %   - 'img_recon.mat' containing reconstructed images for both echoes
 %   - 'trajectory.mat' containing k-space trajectories for both echos
 %   - 'img_recon_te1.nii' and 'img_recon_te2.nii' NIfTI volumes
@@ -80,8 +81,10 @@ function [img_recon_te1, img_recon_te2, ...
     img_recon_te2 = reconstruct_coil_compressed(data, trajectory_te2, nx, ny,nz);
     
     % -- Save outputs --
+    save([config.io.out_path 'config.mat'], 'config');
     save([config.io.out_path 'img_recon.mat'],'img_recon_te1', 'img_recon_te2');
     save([config.io.out_path 'trajectory.mat'], 'trajectory_te1', 'trajectory_te2');
     niftiwrite(img_recon_te1, [config.io.out_path 'img_recon_te1.nii']);
     niftiwrite(img_recon_te2, [config.io.out_path 'img_recon_te2.nii']);
+    
 end

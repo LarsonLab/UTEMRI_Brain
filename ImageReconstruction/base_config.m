@@ -15,5 +15,4 @@ function config = base_config()
     config.recon.output_size.nx = 256; % reconstructed matrix x size
     config.recon.output_size.ny = 256; % reconstructed matrix y size
     config.recon.output_size.nz = 256; % reconstructed matrix z size
-
 end
