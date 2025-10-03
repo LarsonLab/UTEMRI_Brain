@@ -15,6 +15,8 @@ function config = base_config()
     config.recon.output_size.nx = 256; % reconstructed matrix x size
     config.recon.output_size.ny = 256; % reconstructed matrix y size
     config.recon.output_size.nz = 256; % reconstructed matrix z size
+    config.recon.frequency_offset = 300; % Frequency offset used to demodulate
+%                                          kspace data (Hz)
 
     % Trajectory parameters
     config.recon.traj.npoints_petal = 432; % number of points per rosette petal

@@ -20,6 +20,8 @@ function [img_recon_te1, img_recon_te2, ...
 %       .recon.npoints_skip_te1 : # of samples to skip at start of TE1
 %       .recon.npoints_skip_te2 : # of samples to skip at start of TE2
 %       .recon.sampling_interval: Sampling interval (µs)
+%       .recon.frequency_offset : Frequency offset used to demodulate
+%                                 kspace data (Hz)
 %
 % Outputs:
 %   img_recon_te1    - 3D complex reconstructed image at echo 1
@@ -62,10 +64,9 @@ function [img_recon_te1, img_recon_te2, ...
     raw_data(:,2:2:end,:) = -raw_data(:,2:2:end,:);
     
     % demodulate k-space data to account for off-resonance
-    recon_parameters.frequency_offset = 300; %Hz
     t=(0:nsamples_per_petal-1) * config.recon.sampling_interval/2;  % us
-    recon_parameters.f_modulation = exp(1j*2*pi*recon_parameters.frequency_offset*t'/1e6);
-    raw_data = raw_data .* repmat(recon_parameters.f_modulation, [1, npetals, ncoils]);
+    f_modulation = exp(1j*2*pi*config.recon.frequency_offset*t'/1e6);
+    raw_data = raw_data .* repmat(f_modulation, [1, npetals, ncoils]);
     
     % -- Create k-space trajectories --
     [trajectory_te1, trajectory_te2] = ...
