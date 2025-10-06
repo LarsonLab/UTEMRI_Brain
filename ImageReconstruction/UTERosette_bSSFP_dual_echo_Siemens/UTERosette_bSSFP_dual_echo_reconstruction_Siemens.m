@@ -79,12 +79,20 @@ function [img_recon_te1, img_recon_te2, ...
     % second echo
     data=squeeze(raw_data(start_te2:start_te2 + nsamples_per_petal/2 - 1,:,:));
     img_recon_te2 = reconstruct_coil_compressed(data, trajectory_te2, nx, ny,nz);
-    
+
+
     % -- Save outputs --
-    save([config.io.out_path 'config.mat'], 'config');
-    save([config.io.out_path 'img_recon.mat'],'img_recon_te1', 'img_recon_te2');
-    save([config.io.out_path 'trajectory.mat'], 'trajectory_te1', 'trajectory_te2');
-    niftiwrite(img_recon_te1, [config.io.out_path 'img_recon_te1.nii']);
-    niftiwrite(img_recon_te2, [config.io.out_path 'img_recon_te2.nii']);
-    
+    % Create subdirectory for results
+    out_dir = fullfile(config.io.out_path, 'UTERosette_bSSFP_dual_echo');
+    if ~exist(out_dir, 'dir')
+        mkdir(out_dir);
+    end
+
+    % Save config, recon images, and trajectories
+    save(fullfile(out_dir, 'config.mat'), 'config');
+    save(fullfile(out_dir, 'img_recon.mat'), 'img_recon_te1', 'img_recon_te2');
+    save(fullfile(out_dir, 'trajectory.mat'), 'trajectory_te1', 'trajectory_te2');
+    niftiwrite(img_recon_te1, fullfile(out_dir, 'img_recon_te1.nii'));
+    niftiwrite(img_recon_te2, fullfile(out_dir, 'img_recon_te2.nii'));
+   
 end
