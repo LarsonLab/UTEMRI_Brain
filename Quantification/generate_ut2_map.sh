@@ -4,6 +4,10 @@ set -euo pipefail
 # Constants
 TE2_NORMALIZATION_FACTOR=1.38 #scaling factor to normalize TE2 image
 
+# Load FSL module
+FSL_DIR="SCS/fsl/fsl_latest" # set to your FSL module path
+module load $FSL_DIR
+
 # Initialize empty variables
 MPRAGE_DICOM_FOLDER=""
 TE1_IN=""
