@@ -102,7 +102,8 @@ function [img_recon_te1, img_recon_te2, ...
     img_recon_te2_info = niftiinfo(fullflie(out_dir, 'img_recon_te1.nii'));
 
     % Edit nifti header orientation and units information
-    img_transform = eye(1); % define affine transformation for orientation
+    img_transform = eye(4); % define affine transformation for orientation
+    img_transform(2,2) = -1; % reconstructed image is flipped along sagital plane
     img_recon_te1_info.Transform.T = img_transform;
     img_recon_te1_info.TransformName = 'Sform';
     img_recon_te1_info.SpaceUnits = 'Millimeter';
