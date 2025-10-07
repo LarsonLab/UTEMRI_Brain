@@ -16,8 +16,8 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
 %       .npoints_phi        : Number of points to sample phi angle 
 %                             (rotation of petals in xy plane about the z axis)
 %       .npoints_zero_start : Number of zero points in beginning of each petal
-%       .start_te1          : Start point of first echo (setting a fraction will incrementally shift the trajectory)
-%       .start_te2          : Start point of second echo (setting a fraction will incrementally shift the trajectory)
+%       .start_te1          : Start point of first echo along each petal (setting a fraction will incrementally shift the trajectory)
+%       .start_te2          : Start point of second echo along each petal (setting a fraction will incrementally shift the trajectory)
 %
 % OUTPUTS:
 %   trajectory_te1 : trajectory for first echo. mx3 array of column vectors of normalized k-space
