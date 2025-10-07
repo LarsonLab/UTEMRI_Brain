@@ -75,11 +75,10 @@ function [img_recon_te1, img_recon_te2, ...
     % first echo
     data=squeeze(raw_data(start_te1:start_te1 + nsamples_per_petal/2 - 1,:,:));
     img_recon_te1 = reconstruct_coil_compressed(data, trajectory_te1, nx, ny,nz);
-    
+
     % second echo
     data=squeeze(raw_data(start_te2:start_te2 + nsamples_per_petal/2 - 1,:,:));
     img_recon_te2 = reconstruct_coil_compressed(data, trajectory_te2, nx, ny,nz);
-
 
     % -- Save outputs --
     % Create subdirectory for results
