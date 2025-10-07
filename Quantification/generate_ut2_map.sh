@@ -77,6 +77,12 @@ fi
 cp "${MPRAGE_NII}" "${MPRAGE_BASE}.nii"
 MPRAGE_NII="${MPRAGE_BASE}.nii"
 
+# Standardize MPRAGE orientation
+echo "Reorienting images to standard orientation..."
+fslreorient2std "${MPRAGE_NII}" "${MPRAGE_NII}"
+fslreorient2std "${TE1_IN}" "${TE1_IN}"
+fslreorient2std "${TE2_IN}" "${TE2_IN}"
+
 # Register images
 echo "Registering te1 to MPRAGE..."
 flirt -in "${TE1_IN}" -ref "${MPRAGE_NII}" -out "${TE1_TO_MPRAGE}.nii"
