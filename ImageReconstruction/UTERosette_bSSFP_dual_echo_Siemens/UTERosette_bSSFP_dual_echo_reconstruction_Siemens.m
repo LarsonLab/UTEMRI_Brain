@@ -88,11 +88,30 @@ function [img_recon_te1, img_recon_te2, ...
         mkdir(out_dir);
     end
 
-    % Save config, recon images, and trajectories
+    % Save config, recon images, and trajectories as .mat files
     save(fullfile(out_dir, 'config.mat'), 'config');
     save(fullfile(out_dir, 'img_recon.mat'), 'img_recon_te1', 'img_recon_te2');
     save(fullfile(out_dir, 'trajectory.mat'), 'trajectory_te1', 'trajectory_te2');
-    niftiwrite(img_recon_te1, fullfile(out_dir, 'img_recon_te1.nii'));
+
+    % Save initial image niftis to generate headers
+    niftiwrite(img_recon_te1, fullfile(out_dir, 'img_recon_te1.nii')); 
     niftiwrite(img_recon_te2, fullfile(out_dir, 'img_recon_te2.nii'));
-   
+    
+    % Read in nifti headers
+    img_recon_te1_info = niftiinfo(fullflie(out_dir, 'img_recon_te1.nii'));
+    img_recon_te2_info = niftiinfo(fullflie(out_dir, 'img_recon_te1.nii'));
+
+    % Edit nifti header orientation and units information
+    img_transform = eye(1); % define affine transformation for orientation
+    img_recon_te1_info.Transform.T = img_transform;
+    img_recon_te1_info.TransformName = 'Sform';
+    img_recon_te1_info.SpaceUnits = 'Millimeter';
+    img_recon_te2_info.Transform.T = img_transform;
+    img_recon_te2_info.TransformName = 'Sform';
+    img_recon_te2_info.SpaceUnits = 'Millimeter';
+
+    % Resave (overwrite) niftis with edited headers
+    niftiwrite(img_recon_te1, fullfile(out_dir, 'img_recon_te1.nii'), img_recon_te1_info);
+    niftiwrite(img_recon_te2, fullfile(out_dir, 'img_recon_te2.nii'), img_recon_te2_info);
+
 end
