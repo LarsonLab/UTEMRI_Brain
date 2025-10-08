@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Constants
-TE2_NORMALIZATION_FACTOR=1.38 #scaling factor to normalize TE2 image
+TE2_NORMALIZATION_FACTOR=1.38 # scaling factor to normalize TE2 image
 
 # Load FSL module
 FSL_DIR="SCS/fsl/fsl_latest" # set to your FSL module path
@@ -77,23 +77,32 @@ fi
 cp "${MPRAGE_NII}" "${MPRAGE_BASE}.nii"
 MPRAGE_NII="${MPRAGE_BASE}.nii"
 
-# Standardize MPRAGE orientation
-echo "Reorienting images to standard orientation..."
-fslreorient2std "${MPRAGE_NII}" "${MPRAGE_NII}_reoriented"
-fslreorient2std "${TE1_IN}" "${TE1_IN}_reoriented"
-fslreorient2std "${TE2_IN}" "${TE2_IN}_reoriented"
+# Reorient all inputs to standard orientation
+echo "Reorienting all input images to standard orientation..."
+REORIENTED_MPRAGE="${WORKDIR}/MPRAGE_reorient.nii"
+REORIENTED_TE1="${WORKDIR}/te1_reorient.nii"
+REORIENTED_TE2="${WORKDIR}/te2_reorient.nii"
 
-# Register images
+fslreorient2std "${MPRAGE_NII}" "${REORIENTED_MPRAGE}"
+fslreorient2std "${TE1_IN}" "${REORIENTED_TE1}"
+fslreorient2std "${TE2_IN}" "${REORIENTED_TE2}"
+
+# Use reoriented versions for all downstream steps
+MPRAGE_NII="${REORIENTED_MPRAGE}"
+TE1_IN="${REORIENTED_TE1}"
+TE2_IN="${REORIENTED_TE2}"
+
+# Registration steps
 echo "Registering te1 to MPRAGE..."
-flirt -in "${TE1_IN}_reoriented" -ref "${MPRAGE_NII}_reoriented" -out "${TE1_TO_MPRAGE}.nii"
+flirt -in "${TE1_IN}" -ref "${MPRAGE_NII}" -out "${TE1_TO_MPRAGE}.nii"
 
 echo "Registering te2 to MPRAGE..."
-flirt -in "${TE2_IN}_reoriented" -ref "${MPRAGE_NII}_reoriented" -out "${TE2_TO_MPRAGE}.nii"
+flirt -in "${TE2_IN}" -ref "${MPRAGE_NII}" -out "${TE2_TO_MPRAGE}.nii"
 
 echo "Registering te2_to_MPRAGE to te1_to_MPRAGE..."
 flirt -in "${TE2_TO_MPRAGE}.nii" -ref "${TE1_TO_MPRAGE}.nii" -out "${TE2_TO_MPRAGE_TO_TE1}.nii"
 
-# Apply bias field correction to registered images using FSL fast
+# --- Bias field correction using FSL FAST ---
 echo "Bias field correcting te1_to_MPRAGE..."
 fast -B -o "${WORKDIR}/fast_te1" "${TE1_TO_MPRAGE}.nii"
 if [ -f "${WORKDIR}/fast_te1_restore.nii.gz" ]; then
@@ -110,26 +119,24 @@ TE1_RESTORE="${OUTDIR}/te1_to_MPRAGE_restore.nii"
 echo "Bias field correcting te2_to_MPRAGE_to_te1..."
 fast -B -o "${WORKDIR}/fast_te2" "${TE2_TO_MPRAGE_TO_TE1}.nii"
 if [ -f "${WORKDIR}/fast_te2_restore.nii.gz" ]; then
-    TE1_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii.gz"
+    TE2_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii.gz"
 elif [ -f "${WORKDIR}/fast_te2_restore.nii" ]; then
-    TE1_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii"
+    TE2_RESTORE_CAND="${WORKDIR}/fast_te2_restore.nii"
 else
     echo "Error: FAST did not produce a restore file for TE2" >&2
     exit 1
 fi
-fslchfiletype NIFTI "${TE1_RESTORE_CAND}" "${OUTDIR}/te2_to_MPRAGE_restore"
-TE2_RESTORE="${OUTDIR}/te2_to_MPRAGE_restore.nii"
+fslchfiletype NIFTI "${TE2_RESTORE_CAND}" "${OUTDIR}/te2_to_MPRAGE_to_te1_restore"
+TE2_RESTORE="${OUTDIR}/te2_to_MPRAGE_to_te1_restore.nii"
 
-
-# Normalize TE2 image and compute uT2 map
+# --- Normalize TE2 image and compute uT2 map ---
 TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_te1_restore_normalized.nii"
 UT2_MAP="${OUTDIR}/ut2_map.nii"
 
 fslmaths "${TE2_RESTORE}" -mul "${TE2_NORMALIZATION_FACTOR}" "${TE2_NORMALIZED}"
 fslmaths "${TE1_RESTORE}" -sub "${TE2_NORMALIZED}" "${UT2_MAP}"
 
-
-# Clean up intermediate files and convert outputs to NIfTI
+# --- Clean up and enforce consistent format ---
 for f in "${OUTDIR}"/*.nii.gz; do
   [ -e "$f" ] || continue
   fslchfiletype NIFTI "$f" "${f%.gz}"
@@ -139,6 +146,3 @@ done
 echo "Final outputs written to ${OUTDIR}:"
 ls -1 "${OUTDIR}"
 echo "Done."
-
-
-
