@@ -8,7 +8,8 @@
 
 % List of raw twix files and output directories
 scans = {
-    '/data/larson9/ReVIVE/ReVIVE_S17/3_months/meas_MID00336_FID27805_fid_rosette_2mm_bSSFP_40k.dat', '/data/larson9/ReVIVE/ReVIVE_S17/3_months/';
+    '/data/larson9/ReVIVE/ReVIVE_S24/baseline/meas_MID02554_FID16272_fid_rosette_2mm_bSSFP_40k.dat', '/data/larson9/ReVIVE/ReVIVE_S24/baseline/UTERosette_bSSFP_dual_echo/scan1/';
+    '/data/larson9/ReVIVE/ReVIVE_S24/baseline/meas_MID02613_FID16331_fid_rosette_2mm_bSSFP_40k.dat', '/data/larson9/ReVIVE/ReVIVE_S24/baseline/UTERosette_bSSFP_dual_echo/scan2/';
 };
 
 % Modify reconstruction parameters if needed
@@ -23,6 +24,11 @@ if isempty(gcp('nocreate'))
 end
 
 % Setup dependencies
+rdMeas_dene_path = '/home/abechtel/Documents/UTEMRI_Brain/ImageReconstruction';
+if ~ismember(rdMeas_dene_path, path)
+    addpath(rdMeas_dene_path);
+end
+
 if (~exist('Gmri','file'))
     %set up mirt recon toolbox
     currentDirectory = pwd;
