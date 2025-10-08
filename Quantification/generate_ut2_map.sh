@@ -1,20 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
-# --- Constants ---
+# Constants
 TE2_NORMALIZATION_FACTOR=1.38  # scaling factor to normalize TE2 image
 
-# --- Load FSL module ---
+# Load FSL module
 FSL_DIR="SCS/fsl/fsl_latest"  # set to your FSL module path
 module load "$FSL_DIR"
 
-# --- Initialize variables ---
+# Initialize variables
 MPRAGE_DICOM_FOLDER=""
 TE1_IN=""
 TE2_IN=""
 OUTDIR=""
 
-# --- Parse command line flags ---
+# Parse command line flags
 while [[ $# -gt 0 ]]; do
   case $1 in
     -m|--mprage) MPRAGE_DICOM_FOLDER="$2"; shift 2 ;;
@@ -28,14 +28,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Validate inputs ---
+# Validate inputs
 if [[ -z "$MPRAGE_DICOM_FOLDER" || -z "$TE1_IN" || -z "$TE2_IN" || -z "$OUTDIR" ]]; then
   echo "ERROR: Missing required arguments."
   echo "Usage: $0 -m <MPRAGE_dicom_folder> -te1 <te1.nii.gz> -te2 <te2.nii.gz> -o <output_directory>"
   exit 1
 fi
 
-# --- Setup directories ---
+# Setup directories
 mkdir -p "${OUTDIR}"
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "${WORKDIR}"' EXIT
@@ -43,13 +43,13 @@ trap 'rm -rf "${WORKDIR}"' EXIT
 echo "Working directory: ${WORKDIR}"
 echo "Output directory: ${OUTDIR}"
 
-# --- File naming conventions ---
+# File naming conventions
 MPRAGE_BASE="${OUTDIR}/MPRAGE"
 TE1_TO_MPRAGE="${OUTDIR}/te1_to_MPRAGE"
 TE2_TO_MPRAGE="${OUTDIR}/te2_to_MPRAGE"
 TE2_TO_MPRAGE_TO_TE1="${OUTDIR}/te2_to_MPRAGE_to_te1"
 
-# --- Convert MPRAGE DICOMs to gzipped NIfTI ---
+# Convert MPRAGE DICOMs to gzipped NIfTI
 echo "Converting MPRAGE DICOMs to NIfTI (.nii.gz)..."
 dcm2niix -z y -f MPRAGE -o "${WORKDIR}" "${MPRAGE_DICOM_FOLDER}"
 
@@ -61,7 +61,7 @@ fi
 cp "${MPRAGE_NII}" "${MPRAGE_BASE}.nii.gz"
 MPRAGE_NII="${MPRAGE_BASE}.nii.gz"
 
-# --- Reorient all inputs to standard orientation ---
+# Reorient all inputs to standard orientation
 echo "Reorienting all input images to standard orientation..."
 REORIENTED_MPRAGE="${WORKDIR}/MPRAGE_reorient.nii.gz"
 REORIENTED_TE1="${WORKDIR}/te1_reorient.nii.gz"
@@ -85,7 +85,7 @@ flirt -in "${TE2_IN}" -ref "${MPRAGE_NII}" -out "${TE2_TO_MPRAGE}.nii.gz"
 echo "Registering te2_to_MPRAGE to te1_to_MPRAGE..."
 flirt -in "${TE2_TO_MPRAGE}.nii.gz" -ref "${TE1_TO_MPRAGE}.nii.gz" -out "${TE2_TO_MPRAGE_TO_TE1}.nii.gz"
 
-# --- Bias field correction using FAST ---
+# Bias field correction using FAST
 echo "Bias field correcting te1_to_MPRAGE..."
 fast -B -o "${WORKDIR}/fast_te1" "${TE1_TO_MPRAGE}.nii.gz"
 if [ -f "${WORKDIR}/fast_te1_restore.nii.gz" ]; then
@@ -106,7 +106,7 @@ else
 fi
 cp "${TE2_RESTORE}" "${OUTDIR}/te2_to_MPRAGE_to_te1_restore.nii.gz"
 
-# --- Normalize TE2 image and compute uT2 map ---
+# Normalize TE2 image and compute uT2 map
 TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_te1_restore_normalized.nii.gz"
 UT2_MAP="${OUTDIR}/ut2_map.nii.gz"
 
