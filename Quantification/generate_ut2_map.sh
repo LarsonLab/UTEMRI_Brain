@@ -79,16 +79,16 @@ MPRAGE_NII="${MPRAGE_BASE}.nii"
 
 # Standardize MPRAGE orientation
 echo "Reorienting images to standard orientation..."
-fslreorient2std "${MPRAGE_NII}" "${MPRAGE_NII}"
-fslreorient2std "${TE1_IN}" "${TE1_IN}"
-fslreorient2std "${TE2_IN}" "${TE2_IN}"
+fslreorient2std "${MPRAGE_NII}" "${MPRAGE_NII}_reoriented"
+fslreorient2std "${TE1_IN}" "${TE1_IN}_reoriented"
+fslreorient2std "${TE2_IN}" "${TE2_IN}_reoriented"
 
 # Register images
 echo "Registering te1 to MPRAGE..."
-flirt -in "${TE1_IN}" -ref "${MPRAGE_NII}" -out "${TE1_TO_MPRAGE}.nii"
+flirt -in "${TE1_IN}_reoriented" -ref "${MPRAGE_NII}_reoriented" -out "${TE1_TO_MPRAGE}.nii"
 
 echo "Registering te2 to MPRAGE..."
-flirt -in "${TE2_IN}" -ref "${MPRAGE_NII}" -out "${TE2_TO_MPRAGE}.nii"
+flirt -in "${TE2_IN}_reoriented" -ref "${MPRAGE_NII}_reoriented" -out "${TE2_TO_MPRAGE}.nii"
 
 echo "Registering te2_to_MPRAGE to te1_to_MPRAGE..."
 flirt -in "${TE2_TO_MPRAGE}.nii" -ref "${TE1_TO_MPRAGE}.nii" -out "${TE2_TO_MPRAGE_TO_TE1}.nii"
