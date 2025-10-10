@@ -108,8 +108,8 @@ function [img_recon_te1, img_recon_te2, ...
     niftiwrite(img_recon_te2, fullfile(out_dir, 'img_recon_te2.nii'));
     
     % Read in nifti headers
-    img_recon_te1_info = niftiinfo(fullflie(out_dir, 'img_recon_te1.nii'));
-    img_recon_te2_info = niftiinfo(fullflie(out_dir, 'img_recon_te1.nii'));
+    img_recon_te1_info = niftiinfo(fullfile(out_dir, 'img_recon_te1.nii'));
+    img_recon_te2_info = niftiinfo(fullfile(out_dir, 'img_recon_te1.nii'));
 
     % Edit nifti header orientation and units information
     img_transform = eye(4); % define affine transformation for orientation
