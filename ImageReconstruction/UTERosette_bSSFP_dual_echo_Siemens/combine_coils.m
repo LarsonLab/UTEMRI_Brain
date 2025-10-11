@@ -16,11 +16,15 @@ function img_recon = combine_coils(x, csm_all)
         x_slice = squeeze(x(:,:,jj,:));       % [nx, ny, ncoils]
         csm_slice = squeeze(csm_all(:,:,jj,:)); % [nx, ny, ncoils]
 
+        % Remove phase
+        px = angle(x_slice);
+        x_phase_corrected = x_slice .* exp(-1i * px);
+
         % Sum-of-squares normalization
         ll_sq = sum(csm_slice .* conj(csm_slice), 3);
 
         % Weighted combination
-        img_recon(:,:,jj) = sum(conj(csm_slice) .* x_slice, 3) ./ ll_sq;
+        img_recon(:,:,jj) = sum(conj(csm_slice) .* x_phase_corrected, 3) ./ ll_sq;
     end
 
 end
