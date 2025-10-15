@@ -18,6 +18,19 @@ end
 config.recon.npoints_skip_te1 = 2; % number of data points to skip in first echo
 config.recon.npoints_skip_te2 = 0; % number of data points to skip in second echo
 
+% Setup dependencies
+rdMeas_dene_path = '/home/abechtel/Documents/UTEMRI_Brain/ImageReconstruction';
+if ~ismember(rdMeas_dene_path, path)
+    addpath(rdMeas_dene_path);
+end
+
+if (~exist('Gmri','file'))
+    %set up mirt recon toolbox
+    currentDirectory = pwd;
+    cd('/home/plarson/matlab/reconstruction/mirt/'); setup
+    cd(currentDirectory)
+end
+
 % Run reconstruction
 fprintf('Starting reconstruction for subject: %s\n', config.io.twix_path);
 [img_recon_te1, img_recon_te2, trajectory_te1, trajectory_te2] = ...
