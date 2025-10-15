@@ -45,9 +45,8 @@ echo "Output directory: ${OUTDIR}"
 
 # File naming conventions
 MPRAGE_BASE="${OUTDIR}/MPRAGE"
-TE1_TO_MPRAGE="${OUTDIR}/te1_to_MPRAGE"
-TE2_TO_MPRAGE="${OUTDIR}/te2_to_MPRAGE"
-TE2_TO_MPRAGE_TO_TE1="${OUTDIR}/te2_to_MPRAGE_to_te1"
+TE1_BFC="${WORKDIR}/te1_bfc.nii.gz"
+TE2_BFC="${WORKDIR}/te2_bfc.nii.gz"
 
 # Convert MPRAGE DICOMs to gzipped NIfTI
 echo "Converting MPRAGE DICOMs to NIfTI (.nii.gz)..."
@@ -71,47 +70,45 @@ fslreorient2std "${MPRAGE_NII}" "${REORIENTED_MPRAGE}"
 fslreorient2std "${TE1_IN}" "${REORIENTED_TE1}"
 fslreorient2std "${TE2_IN}" "${REORIENTED_TE2}"
 
-MPRAGE_NII="${REORIENTED_MPRAGE}"
-TE1_IN="${REORIENTED_TE1}"
-TE2_IN="${REORIENTED_TE2}"
-
-# --- Registration ---
-echo "Registering te1 to MPRAGE..."
-flirt -in "${TE1_IN}" -ref "${MPRAGE_NII}" -out "${TE1_TO_MPRAGE}.nii.gz"
-
-echo "Registering te2 to MPRAGE..."
-flirt -in "${TE2_IN}" -ref "${MPRAGE_NII}" -out "${TE2_TO_MPRAGE}.nii.gz"
-
-echo "Registering te2_to_MPRAGE to te1_to_MPRAGE..."
-flirt -in "${TE2_TO_MPRAGE}.nii.gz" -ref "${TE1_TO_MPRAGE}.nii.gz" -out "${TE2_TO_MPRAGE_TO_TE1}.nii.gz"
-
-# Bias field correction using FAST
-echo "Bias field correcting te1_to_MPRAGE..."
-fast -B -o "${WORKDIR}/fast_te1" "${TE1_TO_MPRAGE}.nii.gz"
+# Bias field correction
+echo "Bias field correcting TE1..."
+fast -B -o "${WORKDIR}/fast_te1" "${REORIENTED_TE1}"
 if [ -f "${WORKDIR}/fast_te1_restore.nii.gz" ]; then
-  TE1_RESTORE="${WORKDIR}/fast_te1_restore.nii.gz"
+  cp "${WORKDIR}/fast_te1_restore.nii.gz" "${TE1_BFC}"
 else
   echo "Error: FAST did not produce a restore file for TE1" >&2
   exit 1
 fi
-cp "${TE1_RESTORE}" "${OUTDIR}/te1_to_MPRAGE_restore.nii.gz"
 
-echo "Bias field correcting te2_to_MPRAGE_to_te1..."
-fast -B -o "${WORKDIR}/fast_te2" "${TE2_TO_MPRAGE_TO_TE1}.nii.gz"
+echo "Bias field correcting TE2..."
+fast -B -o "${WORKDIR}/fast_te2" "${REORIENTED_TE2}"
 if [ -f "${WORKDIR}/fast_te2_restore.nii.gz" ]; then
-  TE2_RESTORE="${WORKDIR}/fast_te2_restore.nii.gz"
+  cp "${WORKDIR}/fast_te2_restore.nii.gz" "${TE2_BFC}"
 else
   echo "Error: FAST did not produce a restore file for TE2" >&2
   exit 1
 fi
-cp "${TE2_RESTORE}" "${OUTDIR}/te2_to_MPRAGE_to_te1_restore.nii.gz"
+
+# Registration using bias-corrected images
+TE1_TO_MPRAGE="${OUTDIR}/te1_to_MPRAGE.nii.gz"
+TE2_TO_MPRAGE="${OUTDIR}/te2_to_MPRAGE.nii.gz"
+TE2_TO_MPRAGE_TO_TE1="${OUTDIR}/te2_to_MPRAGE_to_te1.nii.gz"
+
+echo "Registering TE1 (bias corrected) to MPRAGE..."
+flirt -in "${TE1_BFC}" -ref "${REORIENTED_MPRAGE}" -out "${TE1_TO_MPRAGE}"
+
+echo "Registering TE2 (bias corrected) to MPRAGE..."
+flirt -in "${TE2_BFC}" -ref "${REORIENTED_MPRAGE}" -out "${TE2_TO_MPRAGE}"
+
+echo "Registering TE2_to_MPRAGE to TE1_to_MPRAGE..."
+flirt -in "${TE2_TO_MPRAGE}" -ref "${TE1_TO_MPRAGE}" -out "${TE2_TO_MPRAGE_TO_TE1}"
 
 # Normalize TE2 image and compute uT2 map
-TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_te1_restore_normalized.nii.gz"
+TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_TE1_normalized.nii.gz"
 UT2_MAP="${OUTDIR}/ut2_map.nii.gz"
 
-fslmaths "${OUTDIR}/te2_to_MPRAGE_to_te1_restore.nii.gz" -mul "${TE2_NORMALIZATION_FACTOR}" "${TE2_NORMALIZED}"
-fslmaths "${OUTDIR}/te1_to_MPRAGE_restore.nii.gz" -sub "${TE2_NORMALIZED}" "${UT2_MAP}"
+fslmaths "${TE2_TO_MPRAGE_TO_TE1}" -mul "${TE2_NORMALIZATION_FACTOR}" "${TE2_NORMALIZED}"
+fslmaths "${TE1_TO_MPRAGE}" -sub "${TE2_NORMALIZED}" "${UT2_MAP}"
 
 echo "Final outputs written to ${OUTDIR}:"
 ls -1 "${OUTDIR}"/*.nii.gz
