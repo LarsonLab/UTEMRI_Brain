@@ -83,18 +83,16 @@ function [img_recon_te1, img_recon_te2, ...
                    size(data_compressed,1), size(data_compressed,2), ncoils_compressed);
     
     % -- Reconstruction --
-    % first echo
+    % Estimate coil sensitivity map from first echo and recon first echo
     data_te1 = squeeze(data_compressed(start_te1:start_te1 + nsamples_per_petal/2 - 1,:,:));
     coilwise_recon_te1 = coilwise_nufft_recon(data_te1, trajectory_te1, nx, ny,nz);
     csm = estimate_csm(coilwise_recon_te1);
     img_recon_te1 = combine_coils(coilwise_recon_te1, csm);
-    % img_recon_te1 = nufft_recon(data_te1, trajectory_te1, nx, ny,nz);
 
-    % second echo
+    % Recon second echo using coil sensitivity map from first echo
     data_te2 = squeeze(data_compressed(start_te2:start_te2 + nsamples_per_petal/2 - 1,:,:));
     coilwise_recon_te2 = coilwise_nufft_recon(data_te2, trajectory_te2, nx, ny,nz);
     img_recon_te2 = combine_coils(coilwise_recon_te2, csm);
-    % img_recon_te2 = nufft_recon(data_te2, trajectory_te2, nx, ny,nz);
 
     % -- Save outputs --
     % Create subdirectory for results

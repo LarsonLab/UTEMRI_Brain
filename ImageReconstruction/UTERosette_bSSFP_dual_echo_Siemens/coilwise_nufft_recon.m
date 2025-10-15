@@ -1,6 +1,6 @@
 function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz)
 %COILWISE_NUFFT_RECON Reconstructs an MRI image from non-Cartesian k-space
-%   using NUFFT-based reconstruction.
+%   using NUFFT-based reconstruction for each individual coil.
 %
 %   INPUTS:
 %       data             - Raw k-space data array, typically size 
