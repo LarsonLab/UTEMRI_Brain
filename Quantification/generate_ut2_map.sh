@@ -104,11 +104,11 @@ echo "Registering TE2_to_MPRAGE to TE1_to_MPRAGE..."
 flirt -in "${TE2_TO_MPRAGE}" -ref "${TE1_TO_MPRAGE}" -out "${TE2_TO_MPRAGE_TO_TE1}"
 
 # Normalize TE2 image and compute uT2 map
-TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_TE1_normalized.nii.gz"
+TE2_NORMALIZED="${OUTDIR}/te2_to_MPRAGE_to_te1_normalized.nii.gz"
 UT2_MAP="${OUTDIR}/ut2_map.nii.gz"
 
 fslmaths "${TE2_TO_MPRAGE_TO_TE1}" -mul "${TE2_NORMALIZATION_FACTOR}" "${TE2_NORMALIZED}"
-fslmaths "${TE1_TO_MPRAGE}" -sub "${TE2_NORMALIZED}" "${UT2_MAP}"
+fslmaths "${TE1_TO_MPRAGE}" -sub "${TE2_NORMALIZED}" -div "${TE1_TO_MPRAGE}" "${UT2_MAP}"
 
 echo "Final outputs written to ${OUTDIR}:"
 ls -1 "${OUTDIR}"/*.nii.gz
