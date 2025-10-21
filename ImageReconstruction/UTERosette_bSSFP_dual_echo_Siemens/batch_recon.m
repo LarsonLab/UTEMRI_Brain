@@ -4,7 +4,7 @@
 % struct for each scan, and calls:
 %   UTERosette_bSSFP_dual_echo_reconstruction_Siemens(config)
 %
-% You can run this serially or with a parfor loop if you want parallelism.
+% Parallel processing is not currently supported.
 
 % List of raw twix files and output directories
 scans = {
@@ -16,12 +16,6 @@ scans = {
 config = base_config();
 % config.recon.npoints_skip_te1 = 2;
 % config.recon.npoints_skip_te2 = 0;
-
-% Open parallel pool (adjust worker count to SLURM allocation)
-nworkers = str2double(getenv('SLURM_CPUS_PER_TASK'));
-if isempty(gcp('nocreate'))
-    parpool(nworkers);
-end
 
 % Setup dependencies
 rdMeas_dene_path = '/home/abechtel/Documents/UTEMRI_Brain/ImageReconstruction';
@@ -36,11 +30,11 @@ if (~exist('Gmri','file'))
     cd(currentDirectory)
 end
 
-% Run reconstruction in parallel
+% Run reconstruction in serial
 nscans = size(scans,1);
 input = scans(:,1);
 outdir = scans(:,2);
-parfor i = 1:nscans
+for i = 1:nscans
     subj_config = config;
     subj_config.io.twix_path = input{i};
     subj_config.io.out_path  = outdir{i};
