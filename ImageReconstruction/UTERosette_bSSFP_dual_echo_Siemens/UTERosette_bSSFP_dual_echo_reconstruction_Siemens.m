@@ -42,6 +42,17 @@ function [img_recon_te1, img_recon_te2, ...
 %   [img1, img2, traj1, traj2] = ...
 %       UTERosette_bSSFP_dual_echo_reconstruction_Siemens(cfg);
 
+    % -- Detect number of workers to use in parallel processing (e.g., from SLURM) --
+    nCPUs = str2double(getenv('SLURM_CPUS_ON_NODE'));
+    if isnan(nCPUs) || nCPUs == 0
+        nCPUs = feature('numcores');
+    end
+
+    % start the pool
+    if isempty(gcp('nocreate'))
+        parpool('local', nCPUs);
+    end
+
     % -- Read in raw data --
     [~, ~, raw_data] =rdMeas_dene(config.io.twix_path);
     

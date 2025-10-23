@@ -25,19 +25,25 @@ function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz)
     R = Reg1(mask, 'beta', beta);
     
     % Density compensation
+    tic;
     kdens = ir_mri_density_comp(trajectory/(2*pi), 'pipe', ...
                                 'G', Gm1.arg.Gnufft, 'arg_pipe', {'fov',256})';
     w = kdens / max(kdens(:));
+    density_comp_time = toc;
+    fprintf('Total time for density compensation: %.2f seconds\n', density_comp_time);
     
     % Coil-wise image reconstruction
+    tic;
     ncoils = size(data, 3);
-    coilwise_recon = zeros(nx, ny, nz, ncoils);   
-    for ncoil = 1:ncoils
+    coilwise_recon = zeros(nx, ny, nz, ncoils);
+    parfor ncoil = 1:ncoils
         lll = data(:,:,ncoil);
         xcp = (Gm1' * ((lll(:)) .* (w)'));
         xpcg = qpwls_pcg1(xcp, Gm1, 1, lll(:), R.C, 'niter', 1);
         coilwise_recon(:,:,:,ncoil) = embed(xpcg, mask(:,:,:));
         ncoil
     end
+    coilwise_recon_time = toc;
+    fprintf('Total time for coilwise reconstruction: %.2f seconds\n', coilwise_recon_time);
 
 end
