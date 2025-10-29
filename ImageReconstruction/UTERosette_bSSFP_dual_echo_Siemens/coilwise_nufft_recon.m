@@ -1,4 +1,4 @@
-function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz)
+function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz, varargin)
 %COILWISE_NUFFT_RECON Reconstructs an MRI image from non-Cartesian k-space
 %   using NUFFT-based reconstruction for each individual coil.
 %
@@ -7,6 +7,10 @@ function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz)
 %       trajectory       - non-Cartesian k-space trajectory. [npoints x 3] array of column vectors of k-space
 %                          coordinates in x, y, and z dimensions, respectively.
 %       nx, ny, nz       - Output image matrix size
+%       varargin         - Optional arguments, must be specified in this
+%                          order
+%                           - dcf_weights: input density compensation
+%                                          weights
 %
 %   OUTPUT:
 %       coilwise_recon   - Reconstructed image from each coil [nx x ny x nz x ncoils]
@@ -25,12 +29,16 @@ function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz)
     R = Reg1(mask, 'beta', beta);
     
     % Density compensation
-    tic;
-    kdens = ir_mri_density_comp(trajectory/(2*pi), 'pipe', ...
-                                'G', Gm1.arg.Gnufft, 'arg_pipe', {'fov',256})';
-    w = kdens / max(kdens(:));
-    density_comp_time = toc;
-    fprintf('Total time for density compensation: %.2f seconds\n', density_comp_time);
+    if isempty(varargin)
+        tic;
+        kdens = ir_mri_density_comp(trajectory/(2*pi), 'pipe', ...
+                                    'G', Gm1.arg.Gnufft, 'arg_pipe', {'fov',256})';
+        dcf_weights = kdens / max(kdens(:));
+        density_comp_time = toc;
+        fprintf('Total time for density compensation: %.2f seconds\n', density_comp_time);
+    else
+        dcf_weights = varargin{1};
+    end
     
     % Coil-wise image reconstruction
     tic;
@@ -38,7 +46,7 @@ function coilwise_recon = coilwise_nufft_recon(data, trajectory, nx, ny, nz)
     coilwise_recon = zeros(nx, ny, nz, ncoils);
     parfor ncoil = 1:ncoils
         lll = data(:,:,ncoil);
-        xcp = (Gm1' * ((lll(:)) .* (w)'));
+        xcp = (Gm1' * ((lll(:)) .* (dcf_weights)'));
         xpcg = qpwls_pcg1(xcp, Gm1, 1, lll(:), R.C, 'niter', 1);
         coilwise_recon(:,:,:,ncoil) = embed(xpcg, mask(:,:,:));
         ncoil

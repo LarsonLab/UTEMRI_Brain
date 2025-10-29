@@ -13,9 +13,13 @@ function [img_recon_te1, img_recon_te2, ...
 %   config                - Struct containing input/output and recon configuration:
 %       .io.twix_path     : Path to raw Siemens twix data file
 %       .io.out_path      : Directory for saving output files
-%       .recon.output_size: Reconstructed matrix size
+%       .io.trajectory_path : (optional) Path to .mat file containing trajectories
+%                             (fields: trajectory_te1, trajectory_te2)
+%       .io.dcf_path      : (optional) Path to .mat file containing dcf weights 
+%                           (fields: dcf_weights_te1, dcf_weights_te2)
+%       .recon.output_size : Reconstructed matrix size
 %                           (fields: nx, ny, nz)
-%       .recon.matrix_size: Matrix size used for trajectory generation
+%       .recon.matrix_size : Matrix size used for trajectory generation
 %       .recon.fov        : Field of view (mm)
 %       .recon.npoints_skip_te1 : # of samples to skip at start of TE1
 %       .recon.npoints_skip_te2 : # of samples to skip at start of TE2
@@ -48,7 +52,7 @@ function [img_recon_te1, img_recon_te2, ...
         nCPUs = feature('numcores');
     end
 
-    % start the pool
+    % Start the pool
     if isempty(gcp('nocreate'))
         parpool('local', nCPUs);
     end
@@ -57,7 +61,7 @@ function [img_recon_te1, img_recon_te2, ...
     [~, ~, raw_data] =rdMeas_dene(config.io.twix_path);
     
     % -- Setup some recon parameters --
-    % reconstructed matrix size
+    % Reconstructed matrix size
     nx=config.recon.output_size.nx;
     ny=config.recon.output_size.ny;
     nz=config.recon.output_size.nz;
@@ -71,19 +75,32 @@ function [img_recon_te1, img_recon_te2, ...
     start_te2 = nsamples_per_petal/2 + config.recon.npoints_skip_te2 + 1;
     
     % -- Data modulations --
-    % phase correction for chopping(?)
+    % Phase correction for chopping(?)
     raw_data(:,2:2:end,:) = -raw_data(:,2:2:end,:);
     
-    % demodulate k-space data to account for off-resonance
+    % Demodulate k-space data to account for off-resonance
     t=(0:nsamples_per_petal-1) * config.recon.sampling_interval/2;  % us
     f_modulation = exp(1j*2*pi*config.recon.frequency_offset*t'/1e6);
     raw_data = raw_data .* repmat(f_modulation, [1, npetals, ncoils]);
     
-    % -- Create k-space trajectories --
-    [trajectory_te1, trajectory_te2] = ...
-        generate_dual_echo_rosette_trajectory(config.recon.traj);
+    % -- Load/generate k-space trajectories --
+
+    % Check if valid trajectory file path provided in config file
+    if isfile(config.io.trajectory_path)
+        % Load trajectories
+        disp('Trajectory file detected.');
+        disp('Loading input trajectories...');
+        load(config.io.trajectory_path, 'trajectory_te1', 'trajectory_te2');
+    else
+        % Generate trajectories
+        disp('No valid trajectory file detected.');
+        disp('Generating trajectories...');
+        [trajectory_te1, trajectory_te2] = ...
+            generate_dual_echo_rosette_trajectory(config.recon.traj);
+    end
 
     % -- Coil compression via SVD --
+    disp('Performing coil compression...');
     data_compressed = squeeze(raw_data); 
     D = reshape(data_compressed, size(data_compressed,1)*size(data_compressed,2), size(raw_data,3));
     [~,S,V] = svd(D,'econ');  
@@ -94,16 +111,50 @@ function [img_recon_te1, img_recon_te2, ...
                    size(data_compressed,1), size(data_compressed,2), ncoils_compressed);
     
     % -- Reconstruction --
-    % Estimate coil sensitivity map from first echo and recon first echo
-    data_te1 = squeeze(data_compressed(start_te1:start_te1 + nsamples_per_petal/2 - 1,:,:));
-    coilwise_recon_te1 = coilwise_nufft_recon(data_te1, trajectory_te1, nx, ny,nz);
-    csm = estimate_csm(coilwise_recon_te1);
-    img_recon_te1 = combine_coils(coilwise_recon_te1, csm);
 
-    % Recon second echo using coil sensitivity map from first echo
+    % Separate data for first and second echo
+    data_te1 = squeeze(data_compressed(start_te1:start_te1 + nsamples_per_petal/2 - 1,:,:));
     data_te2 = squeeze(data_compressed(start_te2:start_te2 + nsamples_per_petal/2 - 1,:,:));
-    coilwise_recon_te2 = coilwise_nufft_recon(data_te2, trajectory_te2, nx, ny,nz);
-    img_recon_te2 = combine_coils(coilwise_recon_te2, csm);
+
+    % Check if valid density compensation file provided in config file
+    if isfile(config.io.dcf_path)
+        % Load density compensation weights
+        disp('Density compensation weights file detected.');
+        disp('Loading input density compensation weights...');
+        load(config.io.dcf_path, 'dcf_weights_te1', 'dcf_weights_te2');
+
+        % Estimate coil sensitivity map from first echo and recon first echo
+        disp('Performing coilwise reconstruction for first echo...');
+        coilwise_recon_te1 = coilwise_nufft_recon(data_te1, trajectory_te1, ...
+            nx, ny, nz, dcf_weights_te1);
+        disp('Estimating coil sensitivity map from first echo...');
+        csm = estimate_csm(coilwise_recon_te1);
+        disp('Perfoming coil combination for first echo...');
+        img_recon_te1 = combine_coils(coilwise_recon_te1, csm);
+
+        % Recon second echo using coil sensitivity map from first echo
+        disp('Performing coilwise reconstruction for second echo...');
+        coilwise_recon_te2 = coilwise_nufft_recon(data_te2, trajectory_te2, ...
+            nx, ny, nz, dcf_weights_te2);
+        disp('Perfoming coil combination for second echo...');
+        img_recon_te2 = combine_coils(coilwise_recon_te2, csm);
+    else
+        % Generate density compensation weights during coilwise recon
+        disp('No valid density compensation weights file detected');
+
+        % Estimate coil sensitivity map from first echo and recon first echo
+        disp('Generating density compensation weights and performing coilwise reconstruction for first echo...');
+        coilwise_recon_te1 = coilwise_nufft_recon(data_te1, trajectory_te1, nx, ny,nz);
+        disp('Estimating coil sensitivity map from first echo...');
+        csm = estimate_csm(coilwise_recon_te1);
+        img_recon_te1 = combine_coils(coilwise_recon_te1, csm);
+    
+        % Recon second echo using coil sensitivity map from first echo
+        disp('Generating density compensation weights and performing coilwise reconstruction for second echo...');
+        coilwise_recon_te2 = coilwise_nufft_recon(data_te2, trajectory_te2, nx, ny,nz);
+        disp('Perfoming coil combination for second echo...');
+        img_recon_te2 = combine_coils(coilwise_recon_te2, csm);
+    end
 
     % -- Save outputs --
     % Create subdirectory for results
