@@ -10,7 +10,8 @@ function csm_all = estimate_csm(x)
     [nx, ny, nz, ncoils] = size(x);
     csm_all = zeros(nx, ny, nz, ncoils);
 
-    for jj = 1:nz
+    tic;
+    parfor jj = 1:nz
         % Extract slice
         x_slice = squeeze(x(:,:,jj,:));   % [nx, ny, ncoils]
 
@@ -25,5 +26,7 @@ function csm_all = estimate_csm(x)
         % Store
         csm_all(:,:,jj,:) = ll;
     end
+    csm_estimation_time = toc;
+    fprintf('Total time for coil sensitivity map estimation: %.2f seconds\n', csm_estimation_time);
 
 end
