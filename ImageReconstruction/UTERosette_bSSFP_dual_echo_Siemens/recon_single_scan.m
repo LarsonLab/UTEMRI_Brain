@@ -20,9 +20,7 @@ config.recon.npoints_skip_te2 = 0; % number of data points to skip in second ech
 
 % Setup dependencies
 rdMeas_dene_path = '/home/abechtel/Documents/UTEMRI_Brain/ImageReconstruction';
-if ~ismember(rdMeas_dene_path, path)
-    addpath(rdMeas_dene_path);
-end
+addpath(genpath(rdMeas_dene_path));
 
 if (~exist('Gmri','file'))
     %set up mirt recon toolbox
