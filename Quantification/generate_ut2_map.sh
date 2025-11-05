@@ -70,6 +70,20 @@ fslreorient2std "${MPRAGE_NII}" "${REORIENTED_MPRAGE}"
 fslreorient2std "${TE1_IN}" "${REORIENTED_TE1}"
 fslreorient2std "${TE2_IN}" "${REORIENTED_TE2}"
 
+# Segment MPRAGE (T1 anatomical)
+echo "Segmenting MPRAGE image (3 tissue classes, T1-type)..."
+fast -n 3 -t 1 -o "${WORKDIR}/fast_mprage" "${MPRAGE_NII}"
+
+if [ ! -f "${WORKDIR}/fast_mprage_seg.nii.gz" ]; then
+  echo "Error: FAST did not produce a segmentation file for MPRAGE" >&2
+  exit 1
+fi
+
+echo "Copying MPRAGE FAST outputs to ${OUTDIR}..."
+for f in "${WORKDIR}"/fast_mprage*; do
+  [ -e "$f" ] && cp "$f" "${OUTDIR}/"
+done
+
 # Bias field correction
 echo "Bias field correcting TE1..."
 fast -B -o "${WORKDIR}/fast_te1" "${REORIENTED_TE1}"
