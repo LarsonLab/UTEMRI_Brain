@@ -66,8 +66,16 @@ if [ -d "${MPRAGE_INPUT}" ]; then
   MPRAGE_NII="${MPRAGE_BASE}.nii.gz"
 elif [[ "${MPRAGE_INPUT}" == *.nii ]] || [[ "${MPRAGE_INPUT}" == *.nii.gz ]]; then
   echo "Detected MPRAGE input as NIfTI file."
-  cp "${MPRAGE_INPUT}" "${MPRAGE_BASE}.nii.gz"
-  MPRAGE_NII="${MPRAGE_BASE}.nii.gz"
+  # Extract original extension
+  EXT="${MPRAGE_INPUT##*.}"        # gets 'nii' or 'gz'
+  if [[ "${EXT}" == "gz" ]]; then
+    cp "${MPRAGE_INPUT}" "${MPRAGE_BASE}.nii.gz"
+    MPRAGE_NII="${MPRAGE_BASE}.nii.gz"
+  else
+    cp "${MPRAGE_INPUT}" "${WORKDIR}/MPRAGE.nii"
+    fslchfiletype NIFTI_GZ "${WORKDIR}/MPRAGE.nii" "${MPRAGE_BASE}"
+    MPRAGE_NII="${MPRAGE_BASE}.nii.gz"
+  fi
 else
   echo "ERROR: -m argument must be either a DICOM folder or a .nii/.nii.gz file."
   exit 1
