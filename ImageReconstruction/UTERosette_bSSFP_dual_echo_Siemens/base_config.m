@@ -23,12 +23,17 @@ function config = base_config()
     config.recon.sampling_interval=10; %in us
     config.recon.fov=0.24; %field of view in m
     config.recon.matrix_size=240; % matrix size used for trajectory generation
-    config.recon.npoints_skip_te1 = 2; % number of data points to skip in first echo
-    config.recon.npoints_skip_te2 = 0; % number of data points to skip in second echo
     config.recon.output_size.nx = 256; % reconstructed matrix x size
     config.recon.output_size.ny = 256; % reconstructed matrix y size
     config.recon.output_size.nz = 256; % reconstructed matrix z size
-    config.recon.frequency_offset = 300; % Frequency offset used to demodulate kspace data (Hz)
+    config.recon.frequency_offset = 300; % frequency offset used to demodulate kspace data (Hz)
+    config.recon.upsample_factor = 10; % factor by which to increase kspace data points through interpolation
+    config.recon.skip_start_te1 = 0; % number of upsampled te1 kspace points to skip at the start of each petal
+    config.recon.skip_end_te1 = 0; % number of upsampeld te1 kspace points to skip at the end of each petal
+    config.recon.skip_start_te2 = 0; % number of upsampled te2 kspace points to skip at the start of each petal
+    config.recon.skip_end_te2 = 0; % number of upsampeld te2 kspace points to skip at the end of each petal
+    config.recon.shift_te1 = 2*config.recon.upsample_factor; % number of upsampled te1 kspace points to shift along each petal
+    config.recon.shift_te2 = 0; % number of upsampled te2 kspace points to shift along each petal
 
     % Trajectory parameters
     config.recon.traj.npoints_petal = 432; % number of points per rosette petal

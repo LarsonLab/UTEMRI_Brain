@@ -73,8 +73,8 @@ function [img_recon_te1, img_recon_te2, ...
     nsamples_per_petal = size(raw_data,1);
     
     % calculate starting data point of each echo (along each petal in rosette)
-    start_te1 = config.recon.npoints_skip_te1 + 1;
-    start_te2 = nsamples_per_petal/2 + config.recon.npoints_skip_te2 + 1;
+    start_te1 = 1;
+    start_te2 = nsamples_per_petal/2 + 1;
     
     % -- Data modulations --
     % Phase correction for chopping(?)
@@ -111,12 +111,45 @@ function [img_recon_te1, img_recon_te2, ...
             ncoils_compressed, size(raw_data,3));
     data_compressed = reshape(D * V(:,1:ncoils_compressed), ...
                    size(data_compressed,1), size(data_compressed,2), ncoils_compressed);
+
+    % -- Prepare k-space data for reconstruction --
+
+    % Upsample data
+    upsample_factor = config.recon.upsample_factor;
+    ns_new = (nsamples_per_petal - 1) * upsample_factor + 1;
+    data_compressed_interp = zeros(ns_new, npetals, 3);
+    x_old = 1:nsamples_per_petal;
+    x_new = linspace(1, nsamples_per_petal, ns_new);
+    
+    for ndim = 1:3
+        for p = 1:npetals
+            y = data_compressed(:, p, ndim);     % original data
+            data_compressed_interp(:, p, ndim) = interp1(x_old, y, x_new, 'spline');
+        end
+    end
+
+    % Separate data for te1 and te2 and skip and shift usampled k-space
+    skip_start_te1 = config.recon.skip_start_te1;
+    skip_end_te1 = config.recon.skip_end_te1;
+    skip_start_te2 = config.recon.skip_start_te2;
+    skip_end_te2 = config.recon.skip_end_te2;
+    shift_te1 = config.recon.shift_te1;
+    shift_te2 = config.recon.shift_te2;
+
+    start_te1_upsampled = (start_te1 - 1) * upsample_factor + 1;
+    start_te2_upsampled = (start_te2 - 1) * upsample_factor + 1;
+    nsamples_per_echo_upsampled = (nsamples_per_petal/2 - 1)*upsample_factor + 1;
+
+    data_te1_upsampled = data_compressed_interp(start_te1_upsampled + skip_start_te1 + shift_te1: ...
+        start_te1_upsampled + nsamples_per_echo_upsampled - 1 - skip_end_te1 + shift_te1,:,:);
+    data_te2_upsampled = data_compressed_interp(start_te2_upsampled + skip_start_te2 + shift_te2: ...
+        start_te2_upsampled + nsamples_per_echo_upsampled - 1 - skip_end_te2 + shift_te2,:,:);
+    
+    % Downsample data after skipping and shifting
+    data_te1 = data_te1_upsampled(1:upsample_factor:end, :, :);
+    data_te2 = data_te2_upsampled(1:upsample_factor:end, :, :);
     
     % -- Reconstruction --
-
-    % Separate data for first and second echo
-    data_te1 = squeeze(data_compressed(start_te1:start_te1 + nsamples_per_petal/2 - 1,:,:));
-    data_te2 = squeeze(data_compressed(start_te2:start_te2 + nsamples_per_petal/2 - 1,:,:));
 
     % Check if valid density compensation file provided in config file
     if isfile(config.io.dcf_path)
