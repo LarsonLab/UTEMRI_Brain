@@ -28,6 +28,7 @@ function config = base_config()
     config.recon.output_size.nz = 256; % reconstructed matrix z size
     config.recon.frequency_offset = 300; % frequency offset used to demodulate kspace data (Hz)
     config.recon.upsample_factor = 10; % factor by which to increase kspace data points through interpolation
+    config.recon.interpolation_method = 'spline'; % method by which to interpolate kspace data for upsampling
     config.recon.skip_start_te1 = 0; % number of upsampled te1 kspace points to skip at the start of each petal
     config.recon.skip_end_te1 = 0; % number of upsampeld te1 kspace points to skip at the end of each petal
     config.recon.skip_start_te2 = 0; % number of upsampled te2 kspace points to skip at the start of each petal

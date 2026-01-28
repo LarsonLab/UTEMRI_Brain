@@ -124,7 +124,7 @@ function [img_recon_te1, img_recon_te2, ...
     for ndim = 1:3
         for p = 1:npetals
             y = data_compressed(:, p, ndim);     % original data
-            data_compressed_interp(:, p, ndim) = interp1(x_old, y, x_new, 'spline');
+            data_compressed_interp(:, p, ndim) = interp1(x_old, y, x_new, config.recon.interpolation_method);
         end
     end
 
