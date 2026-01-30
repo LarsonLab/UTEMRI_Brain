@@ -128,6 +128,14 @@ function [trajectory_te1, trajectory_te2] = generate_dual_echo_rosette_trajector
         shift_frac_te2*ky(floor(start_te2)+1:floor(start_te2)+npoints_te2,:,:);
     kz_te2 = (1-shift_frac_te2)*kz(floor(start_te2):floor(start_te2)+npoints_te2-1,:,:) + ...
         shift_frac_te2*kz(floor(start_te2)+1:floor(start_te2)+npoints_te2,:,:);
+
+    % Truncate beginning and end of trajectories
+    kx_te1 = kx_te1(1+config.recon.traj.skip_start_te1 : end-config.recon.traj.skip_end_te1, :, :);
+    ky_te1 = ky_te1(1+config.recon.traj.skip_start_te1 : end-config.recon.traj.skip_end_te1, :, :);
+    kz_te1 = kz_te1(1+config.recon.traj.skip_start_te1 : end-config.recon.traj.skip_end_te1, :, :);
+    kx_te2 = kx_te2(1+config.recon.traj.skip_start_te2 : end-config.recon.traj.skip_end_te2, :, :);
+    ky_te2 = ky_te2(1+config.recon.traj.skip_start_te2 : end-config.recon.traj.skip_end_te2, :, :);
+    kz_te2 = kz_te2(1+config.recon.traj.skip_start_te2 : end-config.recon.traj.skip_end_te2, :, :);
         
     % Store trajectories in 4D arrays
     trajectory_te1 = zeros(length(kx_te1(:)), 3);

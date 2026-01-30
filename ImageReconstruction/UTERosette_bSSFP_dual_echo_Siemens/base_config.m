@@ -47,4 +47,8 @@ function config = base_config()
     config.recon.traj.npoints_zero_start = 2; % number of zero points in beginning of each petal
     config.recon.traj.start_te1 = 1; % start point of first echo
     config.recon.traj.start_te2 = 214.65; % start point of second echo
+    config.recon.traj.skip_start_te1 = 0; % number of points in each petal to skip at start of te1 trajectory
+    config.recon.traj.skip_end_te1 = 0; % number of points in each petal to skip at end of te1 trajectory
+    config.recon.traj.skip_start_te2 = 0; % number of points in each petal to skip at start of te2 trajectory
+    config.recon.traj.skip_end_te2 = 0; % number of points in each petal to skip at end of te2 trajectory
 end
