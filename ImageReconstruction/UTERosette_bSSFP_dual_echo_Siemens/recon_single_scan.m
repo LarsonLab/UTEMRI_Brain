@@ -15,8 +15,10 @@ if ~exist(config.io.out_path, 'dir')
 end
 
 % Modify recon parameters (optional) - see base_config.m for options
-config.recon.npoints_skip_te1 = 2; % number of data points to skip in first echo
-config.recon.npoints_skip_te2 = 0; % number of data points to skip in second echo
+config.recon.skip_end_te2 = 2;
+config.recon.shift_te1 = 2*config.recon.upsample_factor + 2;
+config.recon.shift_te2 = 2;
+config.recon.traj.skip_end_te2 = 1;
 
 % Setup dependencies
 rdMeas_dene_path = '/home/abechtel/Documents/UTEMRI_Brain/ImageReconstruction';
