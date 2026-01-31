@@ -9,7 +9,10 @@ clear;
 % List of twix files and corresponding output directories
 scans = {
     '/path/to/raw/twix/data/meas_MID123.dat', ...
-    '/path/to/output/directory';
+    '/path/to/output1';
+
+    '/path/to/raw/twix/data/meas_MID456.dat', ...
+    '/path/to/output2';
 };
 
 
@@ -18,8 +21,8 @@ config_list_txt = '/home/abechtel/Documents/UTERosette_bSSFP/data/config_file_li
 
 
 % Optional: shared trajectory/dcf paths
-trajectory_path = '/home/abechtel/Documents/UTERosette_bSSFP/data/ari_trajectory_and_dcf/no_truncation/trajectory.mat';   % e.g. '/data/trajectories/rosette_traj.mat'
-dcf_path        = '/home/abechtel/Documents/UTERosette_bSSFP/data/ari_trajectory_and_dcf/no_truncation/dcf_weights.mat';   % e.g. '/data/trajectories/rosette_dcf.mat'
+trajectory_path = '/home/abechtel/Documents/UTERosette_bSSFP/data/ari_trajectory_and_dcf/skip_end_te2_1/trajectory.mat';   % e.g. '/data/trajectories/rosette_traj.mat'
+dcf_path        = '/home/abechtel/Documents/UTERosette_bSSFP/data/ari_trajectory_and_dcf/skip_end_te2_1/dcf_weights.mat';   % e.g. '/data/trajectories/rosette_dcf.mat'
 
 % Create config files and list
 nscans = size(scans, 1);
@@ -50,12 +53,13 @@ for i = 1:nscans
     config.io.twix_path = twix_path;
     config.io.out_path  = out_path;
     config.io.trajectory_path = trajectory_path;
-    config.io.dcf_path        = dcf_path;
+    config.io.dcf_path = dcf_path;
 
     % Modify recon parameters (optional) - see base_config.m for options
     config.recon.skip_end_te2 = 2;
     config.recon.shift_te1 = 2*config.recon.upsample_factor + 2;
     config.recon.shift_te2 = 2;
+    config.recon.traj.skip_end_te2 = 1;
 
     % Save config
     config_file = fullfile(out_path, 'config.mat');
