@@ -7,9 +7,9 @@ set -euo pipefail
 #!/bin/bash
 set -euo pipefail
 
-# Load FSL module (currently skipping this for batch processing purposes)
-# FSL_DIR="SCS/fsl/fsl_latest"
-# module load "$FSL_DIR"
+# Load FSL module
+FSL_DIR="SCS/fsl/fsl_latest"
+module load "$FSL_DIR"
 
 # Initialize variables
 MPRAGE_INPUT=""
