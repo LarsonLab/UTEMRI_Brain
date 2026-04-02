@@ -1,0 +1,6 @@
+# matlab autosave files
+**.asv
+
+# OS generated files 
+.DS_Store
+._*
