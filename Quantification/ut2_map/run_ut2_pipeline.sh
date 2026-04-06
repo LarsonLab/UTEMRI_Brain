@@ -7,11 +7,11 @@ Usage:
   $(basename "$0") <te1.nii|nii.gz> <te2.nii|nii.gz> <registration_ref|DICOM_dir> <segmentation_ref|DICOM_dir> <output_dir>
 
 Example:
-  $(basename "$0") te1.nii te2.nii /path/to/reg_ref.nii.gz /path/to/seg_ref.nii.gz out "1,2,3" 1200
+  $(basename "$0") te1.nii te2.nii /path/to/reg_ref.nii.gz /path/to/seg_ref.nii.gz out
 USAGE
 }
 
-if [[ $# -ne 7 ]]; then
+if [[ $# -ne 5 ]]; then
   usage >&2
   exit 1
 fi
