@@ -17,6 +17,7 @@ if [[ $# -ne 4 ]]; then
   exit 1
 fi
 
+# Load FSL tools used by fslstats and fslmaths.
 FSL_DIR="SCS/fsl/fsl_latest"
 module load "$FSL_DIR"
 
@@ -35,6 +36,16 @@ require_cmd awk
 
 mkdir -p "$OUTDIR"
 
+log() {
+  printf '[%(%F %T)T] %s\n' -1 "$*"
+}
+
+log "Starting UT2 subtraction"
+log "TE1: $TE1_INPUT"
+log "TE2: $TE2_INPUT"
+log "Rescaling mask: $RESCALING_MASK"
+
+# Measure the mean signal in the rescaling mask for both images.
 TE1_MEAN=$(fslstats "$TE1_INPUT" -k "$RESCALING_MASK" -M)
 TE2_MEAN=$(fslstats "$TE2_INPUT" -k "$RESCALING_MASK" -M)
 
@@ -48,19 +59,27 @@ if awk -v b="$TE2_MEAN" 'BEGIN { exit !(b == 0) }'; then
   exit 1
 fi
 
+# Scaling factor is mean(TE1) / mean(TE2) within the mask.
 TE2_SCALING_FACTOR=$(awk -v a="$TE1_MEAN" -v b="$TE2_MEAN" 'BEGIN { printf "%.10f", a / b }')
 if [[ -z "$TE2_SCALING_FACTOR" ]]; then
   echo "Error: failed to compute te2 scaling factor" >&2
   exit 1
 fi
 
-echo "te2_scaling_factor=$TE2_SCALING_FACTOR"
+log "Mean TE1 in mask: $TE1_MEAN"
+log "Mean TE2 in mask: $TE2_MEAN"
+log "te2_scaling_factor=$TE2_SCALING_FACTOR"
+
 echo "$TE2_SCALING_FACTOR" > "$OUTDIR/te2_scaling_factor.txt"
 
+# Rescale TE2, then subtract it from TE1 to create the UT2 map.
 TE2_RESCALED="$OUTDIR/te2_rescaled.nii.gz"
+log "Writing rescaled TE2: $TE2_RESCALED"
 fslmaths "$TE2_INPUT" -mul "$TE2_SCALING_FACTOR" "$TE2_RESCALED"
 
 UT2_MAP="$OUTDIR/ut2_map.nii.gz"
+log "Writing UT2 map: $UT2_MAP"
 fslmaths "$TE1_INPUT" -sub "$TE2_RESCALED" "$UT2_MAP"
 
-echo "UT2 subtraction step completed. Outputs written to: $OUTDIR"
+log "UT2 subtraction step completed"
+log "Outputs written to: $OUTDIR"

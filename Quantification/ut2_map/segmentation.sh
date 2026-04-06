@@ -41,7 +41,18 @@ mkdir -p "$OUTDIR"
 WORKDIR="$OUTDIR/_segmentation_work"
 mkdir -p "$WORKDIR"
 
+log() {
+  printf '[%(%F %T)T] %s\n' -1 "$*"
+}
+
+log "Starting segmentation"
+log "Segmentation reference: $SEG_REF_INPUT"
+log "Rescaling labels: $RESCALING_LABELS_RAW"
+log "Rescaling threshold: $RESCALING_THRESHOLD"
+
+# Convert the segmentation reference to NIfTI if it is a DICOM directory.
 if [[ -d "$SEG_REF_INPUT" ]]; then
+  log "Converting DICOM segmentation reference with dcm2niix"
   dcm2niix -z y -o "$WORKDIR" -f segmentation_ref "$SEG_REF_INPUT" >/dev/null
   SEG_REF_NIFTI="$WORKDIR/segmentation_ref.nii.gz"
   [[ -f "$SEG_REF_NIFTI" ]] || { echo "Error: dcm2niix did not create $SEG_REF_NIFTI" >&2; exit 1; }
@@ -49,10 +60,14 @@ else
   SEG_REF_NIFTI="$SEG_REF_INPUT"
 fi
 
+# Reorient once before running mindglide and thresholding.
 SEG_REF_REORIENT="$WORKDIR/segmentation_ref_reoriented.nii.gz"
+log "Reorienting segmentation reference"
 fslreorient2std "$SEG_REF_NIFTI" "$SEG_REF_REORIENT"
 
+# Run your external mindglide wrapper script.
 MINDGLIDE_OUT="$OUTDIR/mindglide_mask_segmentation_ref.nii.gz"
+log "Running mindglide"
 "$MINDGLIDE_SCRIPT" "$SEG_REF_REORIENT" "$MINDGLIDE_OUT"
 [[ -f "$MINDGLIDE_OUT" ]] || { echo "Error: mindglide output not found: $MINDGLIDE_OUT" >&2; exit 1; }
 
@@ -65,9 +80,11 @@ for label in "${LABELS[@]}"; do
 done
 [[ ${#FILTERED_LABELS[@]} -gt 0 ]] || { echo "Error: no rescaling labels provided" >&2; exit 1; }
 
+# Build a binary mask that includes only the requested labels.
 LABEL_MASK="$WORKDIR/rescaling_mask_labels.nii.gz"
 FIRST_LABEL=1
 for label in "${FILTERED_LABELS[@]}"; do
+  log "Extracting label $label"
   LABEL_BIN="$WORKDIR/label_${label}.nii.gz"
   fslmaths "$MINDGLIDE_OUT" -thr "$label" -uthr "$label" -bin "$LABEL_BIN"
   if [[ $FIRST_LABEL -eq 1 ]]; then
@@ -79,10 +96,15 @@ for label in "${FILTERED_LABELS[@]}"; do
   fi
 done
 
+# Remove voxels in the segmentation reference above the threshold.
 THRESH_MASK="$WORKDIR/below_threshold_mask.nii.gz"
+log "Applying threshold filter"
 fslmaths "$SEG_REF_REORIENT" -uthr "$RESCALING_THRESHOLD" -bin "$THRESH_MASK"
 
+# Final rescaling mask is the label mask restricted by the threshold mask.
 RESCALING_MASK="$OUTDIR/rescaling_mask_segmentation_ref.nii.gz"
+log "Creating final rescaling mask"
 fslmaths "$LABEL_MASK" -mas "$THRESH_MASK" "$RESCALING_MASK"
 
-echo "Segmentation step completed. Outputs written to: $OUTDIR"
+log "Segmentation step completed"
+log "Outputs written to: $OUTDIR"

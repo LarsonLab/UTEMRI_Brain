@@ -17,7 +17,7 @@ if [[ $# -ne 4 ]]; then
   exit 1
 fi
 
-# Load FSL module
+# Load FSL before checking for FSL tools.
 FSL_DIR="SCS/fsl/fsl_latest"
 module load "$FSL_DIR"
 
@@ -40,8 +40,18 @@ mkdir -p "$OUTDIR"
 WORKDIR="$OUTDIR/_registration_work"
 mkdir -p "$WORKDIR"
 
-# Convert registration reference if it is a DICOM directory.
+log() {
+  printf '[%(%F %T)T] %s\n' -1 "$*"
+}
+
+log "Starting registration"
+log "TE1: $TE1_INPUT"
+log "TE2: $TE2_INPUT"
+log "Registration reference: $REG_REF_INPUT"
+
+# Convert the registration reference to NIfTI if it is a DICOM directory.
 if [[ -d "$REG_REF_INPUT" ]]; then
+  log "Converting DICOM registration reference with dcm2niix"
   dcm2niix -z y -o "$WORKDIR" -f registration_ref "$REG_REF_INPUT" >/dev/null
   REG_REF_NIFTI="$WORKDIR/registration_ref.nii.gz"
   [[ -f "$REG_REF_NIFTI" ]] || { echo "Error: dcm2niix did not create $REG_REF_NIFTI" >&2; exit 1; }
@@ -49,19 +59,23 @@ else
   REG_REF_NIFTI="$REG_REF_INPUT"
 fi
 
+# Reorient all three images to standard orientation before bias correction and registration.
 TE1_REORIENT="$WORKDIR/te1_reoriented.nii.gz"
 TE2_REORIENT="$WORKDIR/te2_reoriented.nii.gz"
 REG_REF_REORIENT="$WORKDIR/registration_ref_reoriented.nii.gz"
 
+log "Reorienting TE1, TE2, and registration reference"
 fslreorient2std "$TE1_INPUT" "$TE1_REORIENT"
 fslreorient2std "$TE2_INPUT" "$TE2_REORIENT"
 fslreorient2std "$REG_REF_NIFTI" "$REG_REF_REORIENT"
 
-# Bias-field correction with FSL FAST.
+# FAST performs bias-field correction and also writes bias-field outputs.
+log "Bias-field correcting TE1"
 fast -B -o "$WORKDIR/te1_bfc" "$TE1_REORIENT"
+log "Bias-field correcting TE2"
 fast -B -o "$WORKDIR/te2_bfc" "$TE2_REORIENT"
 
-# FAST output file names can vary slightly by version; normalize them to the requested names.
+# FAST output names can vary by version, so normalize them to the requested names.
 for base in te1_bfc te2_bfc; do
   if [[ -f "$WORKDIR/${base}_restore.nii.gz" ]]; then
     mv -f "$WORKDIR/${base}_restore.nii.gz" "$OUTDIR/${base}.nii.gz"
@@ -80,11 +94,18 @@ for base in te1_bfc te2_bfc; do
     echo "Error: could not find bias field output for $base" >&2
     exit 1
   fi
+
 done
 
-# Registrations.
+# Register each TE image to the reference, then register TE2 into TE1 space.
+log "Registering TE1 to registration reference"
 flirt -in "$OUTDIR/te1_bfc.nii.gz" -ref "$REG_REF_REORIENT" -out "$OUTDIR/te1_to_registration_ref.nii.gz" -omat "$OUTDIR/te1_to_registration_ref.mat" -cost mutualinfo -dof 6
+
+log "Registering TE2 to registration reference"
 flirt -in "$OUTDIR/te2_bfc.nii.gz" -ref "$REG_REF_REORIENT" -out "$OUTDIR/te2_to_registration_ref.nii.gz" -omat "$OUTDIR/te2_to_registration_ref.mat" -cost mutualinfo -dof 6
+
+log "Registering TE2-in-reference-space to TE1-in-reference-space"
 flirt -in "$OUTDIR/te2_to_registration_ref.nii.gz" -ref "$OUTDIR/te1_to_registration_ref.nii.gz" -out "$OUTDIR/te2_to_registration_ref_to_te1.nii.gz" -omat "$OUTDIR/te2_to_registration_ref_to_te1.mat" -cost mutualinfo -dof 6
 
-echo "Registration step completed. Outputs written to: $OUTDIR"
+log "Registration step completed"
+log "Outputs written to: $OUTDIR"
