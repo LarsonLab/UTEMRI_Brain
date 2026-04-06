@@ -17,6 +17,10 @@ if [[ $# -ne 4 ]]; then
   exit 1
 fi
 
+# Load FSL module
+FSL_DIR="SCS/fsl/fsl_latest"
+module load "$FSL_DIR"
+
 TE1_INPUT=$1
 TE2_INPUT=$2
 REG_REF_INPUT=$3

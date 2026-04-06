@@ -17,6 +17,9 @@ if [[ $# -ne 4 ]]; then
   exit 1
 fi
 
+FSL_DIR="SCS/fsl/fsl_latest"
+module load "$FSL_DIR"
+
 TE1_INPUT=$1
 TE2_INPUT=$2
 RESCALING_MASK=$3
