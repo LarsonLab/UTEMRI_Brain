@@ -71,9 +71,9 @@ fslreorient2std "$REG_REF_NIFTI" "$REG_REF_REORIENT"
 
 # FAST performs bias-field correction and also writes bias-field outputs.
 log "Bias-field correcting TE1"
-fast -B -o "$WORKDIR/te1_bfc" "$TE1_REORIENT"
+fast -B -b -o "$WORKDIR/te1_bfc" "$TE1_REORIENT"
 log "Bias-field correcting TE2"
-fast -B -o "$WORKDIR/te2_bfc" "$TE2_REORIENT"
+fast -B -b -o "$WORKDIR/te2_bfc" "$TE2_REORIENT"
 
 # FAST output names can vary by version, so normalize them to the requested names.
 for base in te1_bfc te2_bfc; do
