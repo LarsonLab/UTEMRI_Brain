@@ -46,6 +46,8 @@ This requires the Orchestra 1.7-1 sdk toolbox from GE which can be found here:ht
 
 These use the Michigan Advanced Image Reconstruction (MIRT) toolbox, available here: https://github.com/JeffFessler/mirt
 
+For details on reconstruction of dual-echo UTE Rosette data, see `ImageReconstruction/UTERosette_bSSFP_dual_echo_Siemens`.
+
 ## Generate ultrashort-T2* fitted parameter maps
 Open `VFA_fitting_script.m` in MATLAB and follow through the code to run and generate fitted brain uT2 parameter maps. 
 
