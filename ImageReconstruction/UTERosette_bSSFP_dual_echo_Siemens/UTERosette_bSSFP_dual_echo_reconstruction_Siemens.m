@@ -57,7 +57,7 @@ function [img_recon_te1, img_recon_te2, ...
         parpool('local', nCPUs);
     end
 
-    tic;
+    t_start = tic;
 
     % -- Read in raw data --
     [~, ~, raw_data] =rdMeas_dene(config.io.twix_path);
@@ -225,7 +225,7 @@ function [img_recon_te1, img_recon_te2, ...
     niftiwrite(img_recon_te1, fullfile(out_dir, 'img_recon_te1.nii'), img_recon_te1_info);
     niftiwrite(img_recon_te2, fullfile(out_dir, 'img_recon_te2.nii'), img_recon_te2_info);
 
-    total_processing_time = toc;
+    total_processing_time = toc(t_start);
     fprintf('Total processing time: %.2f seconds\n', total_processing_time);
 
 end
