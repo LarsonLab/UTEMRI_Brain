@@ -21,6 +21,10 @@ if [[ $# -ne 4 ]]; then
   exit 1
 fi
 
+# Load FSL before checking for FSL tools.
+FSL_DIR="SCS/fsl/fsl_latest"
+module load "$FSL_DIR"
+
 SEG_REF_INPUT=$1
 RESCALING_LABELS_RAW=$2
 RESCALING_THRESHOLD=$3

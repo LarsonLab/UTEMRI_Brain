@@ -99,13 +99,13 @@ done
 
 # Register each TE image to the reference, then register TE2 into TE1 space.
 log "Registering TE1 to registration reference"
-flirt -in "$OUTDIR/te1_bfc.nii.gz" -ref "$REG_REF_REORIENT" -out "$OUTDIR/te1_to_registration_ref.nii.gz" -omat "$OUTDIR/te1_to_registration_ref.mat" -cost mutualinfo -dof 6
+flirt -in "$OUTDIR/te1_bfc.nii.gz" -ref "$REG_REF_REORIENT" -out "$OUTDIR/te1_to_registration_ref.nii.gz"
 
 log "Registering TE2 to registration reference"
-flirt -in "$OUTDIR/te2_bfc.nii.gz" -ref "$REG_REF_REORIENT" -out "$OUTDIR/te2_to_registration_ref.nii.gz" -omat "$OUTDIR/te2_to_registration_ref.mat" -cost mutualinfo -dof 6
+flirt -in "$OUTDIR/te2_bfc.nii.gz" -ref "$REG_REF_REORIENT" -out "$OUTDIR/te2_to_registration_ref.nii.gz"
 
 log "Registering TE2-in-reference-space to TE1-in-reference-space"
-flirt -in "$OUTDIR/te2_to_registration_ref.nii.gz" -ref "$OUTDIR/te1_to_registration_ref.nii.gz" -out "$OUTDIR/te2_to_registration_ref_to_te1.nii.gz" -omat "$OUTDIR/te2_to_registration_ref_to_te1.mat" -cost mutualinfo -dof 6
+flirt -in "$OUTDIR/te2_to_registration_ref.nii.gz" -ref "$OUTDIR/te1_to_registration_ref.nii.gz" -out "$OUTDIR/te2_to_registration_ref_to_te1.nii.gz"
 
 log "Registration step completed"
 log "Outputs written to: $OUTDIR"
