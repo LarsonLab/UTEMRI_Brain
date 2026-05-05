@@ -25,7 +25,7 @@ OUTDIR=$5
 
 # Fixed rescaling settings.
 RESCALING_LABELS="9"
-RESCALING_THRESHOLD="170"
+RESCALING_THRESHOLD="9999"
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 mkdir -p "$OUTDIR"
