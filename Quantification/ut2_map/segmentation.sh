@@ -16,6 +16,17 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || { echo "Error: required command not found: $1" >&2; exit 1; }
 }
 
+log() {
+  printf '[%(%F %T)T] %s\n' -1 "$*"
+}
+
+cleanup() {
+  if [[ -n "${WORKDIR:-}" && -d "${WORKDIR:-}" ]]; then
+    rm -rf "$WORKDIR"
+  fi
+}
+trap cleanup EXIT
+
 if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
@@ -42,12 +53,7 @@ MINDGLIDE_SCRIPT="$SCRIPT_DIR/run_mindglide.sh"
 [[ -x "$MINDGLIDE_SCRIPT" ]] || { echo "Error: expected executable mindglide script at $MINDGLIDE_SCRIPT" >&2; exit 1; }
 
 mkdir -p "$OUTDIR"
-WORKDIR="$OUTDIR/_segmentation_work"
-mkdir -p "$WORKDIR"
-
-log() {
-  printf '[%(%F %T)T] %s\n' -1 "$*"
-}
+WORKDIR=$(mktemp -d "$OUTDIR/.segmentation_tmp.XXXXXX")
 
 log "Starting segmentation"
 log "Segmentation reference: $SEG_REF_INPUT"
@@ -60,8 +66,10 @@ if [[ -d "$SEG_REF_INPUT" ]]; then
   dcm2niix -z y -o "$WORKDIR" -f segmentation_ref "$SEG_REF_INPUT" >/dev/null
   SEG_REF_NIFTI="$WORKDIR/segmentation_ref.nii.gz"
   [[ -f "$SEG_REF_NIFTI" ]] || { echo "Error: dcm2niix did not create $SEG_REF_NIFTI" >&2; exit 1; }
+  cp -f "$SEG_REF_NIFTI" "$OUTDIR/segmentation_ref.nii.gz"
 else
   SEG_REF_NIFTI="$SEG_REF_INPUT"
+  cp -f "$SEG_REF_NIFTI" "$OUTDIR/segmentation_ref.nii.gz"
 fi
 
 # Reorient once before running mindglide and thresholding.

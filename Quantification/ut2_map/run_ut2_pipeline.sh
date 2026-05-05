@@ -23,8 +23,7 @@ REG_REF_INPUT=$3
 SEG_REF_INPUT=$4
 OUTDIR=$5
 
-# These were hard-coded in your edited version so the pipeline can run
-# with a fixed rescaling definition.
+# Fixed rescaling settings.
 RESCALING_LABELS="9"
 RESCALING_THRESHOLD="170"
 

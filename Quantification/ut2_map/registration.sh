@@ -12,6 +12,17 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || { echo "Error: required command not found: $1" >&2; exit 1; }
 }
 
+log() {
+  printf '[%(%F %T)T] %s\n' -1 "$*"
+}
+
+cleanup() {
+  if [[ -n "${WORKDIR:-}" && -d "${WORKDIR:-}" ]]; then
+    rm -rf "$WORKDIR"
+  fi
+}
+trap cleanup EXIT
+
 if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
@@ -37,12 +48,7 @@ require_cmd flirt
 require_cmd dcm2niix
 
 mkdir -p "$OUTDIR"
-WORKDIR="$OUTDIR/_registration_work"
-mkdir -p "$WORKDIR"
-
-log() {
-  printf '[%(%F %T)T] %s\n' -1 "$*"
-}
+WORKDIR=$(mktemp -d "$OUTDIR/.registration_tmp.XXXXXX")
 
 log "Starting registration"
 log "TE1: $TE1_INPUT"
@@ -55,8 +61,10 @@ if [[ -d "$REG_REF_INPUT" ]]; then
   dcm2niix -z y -o "$WORKDIR" -f registration_ref "$REG_REF_INPUT" >/dev/null
   REG_REF_NIFTI="$WORKDIR/registration_ref.nii.gz"
   [[ -f "$REG_REF_NIFTI" ]] || { echo "Error: dcm2niix did not create $REG_REF_NIFTI" >&2; exit 1; }
+  cp -f "$REG_REF_NIFTI" "$OUTDIR/registration_ref.nii.gz"
 else
   REG_REF_NIFTI="$REG_REF_INPUT"
+  cp -f "$REG_REF_NIFTI" "$OUTDIR/registration_ref.nii.gz"
 fi
 
 # Reorient all three images to standard orientation before bias correction and registration.
