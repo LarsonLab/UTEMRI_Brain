@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/pipeline_config.sh"
+module load "$FSL_DIR"
+
 usage() {
   cat <<USAGE
 Usage:
@@ -31,10 +35,6 @@ if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
 fi
-
-# Load FSL before checking for FSL tools.
-FSL_DIR="SCS/fsl/fsl_latest"
-module load "$FSL_DIR"
 
 SEG_REF_INPUT=$1
 RESCALING_LABELS_RAW=$2

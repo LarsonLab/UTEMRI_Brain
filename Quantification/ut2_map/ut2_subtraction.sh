@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/config.sh"
+module load "$FSL_DIR"
+
 usage() {
   cat <<USAGE
 Usage:
@@ -16,10 +20,6 @@ if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
 fi
-
-# Load FSL tools used by fslstats and fslmaths.
-FSL_DIR="SCS/fsl/fsl_latest"
-module load "$FSL_DIR"
 
 TE1_INPUT=$1
 TE2_INPUT=$2
