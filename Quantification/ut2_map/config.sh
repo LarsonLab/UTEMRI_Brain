@@ -11,5 +11,5 @@
 #   MODEL_BIND       -> bind mount mapping for MindGlide model files
 
 export FSL_DIR="SCS/fsl/fsl_latest"
-export APPTAINER_IMAGE="/home/$USER/mindGlide/mindglide.sif"
-export MODEL_BIND="/home/$USER/mindGlide/models:/models"
+export APPTAINER_IMAGE="/data/larson9/mindGlide/mindglide.sif"
+export MODEL_BIND="/data/larson9/mindGlide/models:/models"
