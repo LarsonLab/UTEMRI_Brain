@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-source "$SCRIPT_DIR/pipeline_config.sh"
+source "$SCRIPT_DIR/config.sh"
 module load "$FSL_DIR"
 
 usage() {

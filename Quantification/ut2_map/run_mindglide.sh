@@ -4,6 +4,9 @@ set -euo pipefail
 # Usage:
 #   ./run_mindglide.sh /path/to/input.nii.gz /path/to/output_seg.nii.gz
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/config.sh"
+
 APPTAINER_IMAGE="/home/$USER/mindGlide/mindglide.sif"
 MODEL_BIND="/home/$USER/mindGlide/models:/models"
 
