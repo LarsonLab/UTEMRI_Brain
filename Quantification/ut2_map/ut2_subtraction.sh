@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Compute the final UT2 map by normalizing TE2 to the TE1 signal level inside
+# the rescaling mask and subtracting the rescaled TE2 image from TE1.
+# Usage:
+#   ./ut2_subtraction.sh te1_to_registration_ref.nii te2_to_registration_ref_to_te1.nii rescaling_mask.nii path/to/outdir
+
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/config.sh"
 module load "$FSL_DIR"
@@ -16,6 +21,7 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || { echo "Error: required command not found: $1" >&2; exit 1; }
 }
 
+# Validate the required arguments before starting the calculation.
 if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
@@ -34,6 +40,7 @@ require_cmd fslstats
 require_cmd fslmaths
 require_cmd awk
 
+# Create the output directory up front.
 mkdir -p "$OUTDIR"
 
 log() {

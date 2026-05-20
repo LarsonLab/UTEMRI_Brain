@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Build the rescaling mask used for UT2 subtraction by running MindGlide,
+# selecting the requested labels, and applying the intensity threshold.
+#
+# Usage:
+#   ./segmentation.sh segmentation_ref.nii.gz "1,2,3" 1200 path/to/outdir
+#   ./segmentation.sh /path/to/dicom_dir "1 2 3" 1200 path/to/outdir
+
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/config.sh"
 module load "$FSL_DIR"
@@ -31,6 +38,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Validate the required arguments and inputs.
 if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
@@ -52,6 +60,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 MINDGLIDE_SCRIPT="$SCRIPT_DIR/run_mindglide.sh"
 [[ -x "$MINDGLIDE_SCRIPT" ]] || { echo "Error: expected executable mindglide script at $MINDGLIDE_SCRIPT" >&2; exit 1; }
 
+# Create a temporary workspace for intermediate files.
 mkdir -p "$OUTDIR"
 WORKDIR=$(mktemp -d "$OUTDIR/.segmentation_tmp.XXXXXX")
 

@@ -4,10 +4,7 @@ set -euo pipefail
 # This script runs run_ut2_pipeline.sh for multiple subjects
 # using an input text file organized in blocks.
 #
-# -------------------------
-# INPUT FILE FORMAT
-# -------------------------
-#
+# INPUT FILE FORMAT:
 # The input file should contain groups of 5 lines per subject:
 #
 #   1. Path to TE1 image (.nii or .nii.gz)
@@ -22,10 +19,7 @@ set -euo pipefail
 #
 # Lines starting with '#' are treated as comments and ignored.
 #
-# -------------------------
-# EXAMPLE INPUT FILE
-# -------------------------
-#
+# EXAMPLE INPUT FILE:
 # # Subject 1
 # /data/sub1/te1.nii
 # /data/sub1/te2.nii
@@ -40,10 +34,7 @@ set -euo pipefail
 # /data/sub2/seg_ref
 # /data/sub2/output
 #
-# -------------------------
-# USAGE
-# -------------------------
-#
+# USAGE:
 #   ./run_ut2_pipeline_batch.sh input_blocks.txt
 
 usage() {
@@ -51,6 +42,7 @@ usage() {
   exit 1
 }
 
+# Validate the single required argument.
 [[ $# -ne 1 ]] && usage
 
 INPUT_FILE=$1
@@ -65,6 +57,7 @@ log() {
 
 log "Starting batch pipeline using block format"
 
+# Accumulate one subject at a time until a blank line ends the block.
 block=()
 line_num=0
 subject_id=0

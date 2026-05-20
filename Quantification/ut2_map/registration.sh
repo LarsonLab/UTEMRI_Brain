@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Register the TE1 and TE2 images to a shared reference, then align
+# TE2 into TE1 space for downstream UT2 subtraction.
+#
+# Usage:
+#   ./registration.sh te1.nii te2.nii /path/to/reg_ref.nii.gz path/to/outdir
+
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/config.sh"
 module load "$FSL_DIR"
@@ -27,6 +33,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Validate the required arguments and input files.
 if [[ $# -ne 4 ]]; then
   usage >&2
   exit 1
@@ -47,6 +54,7 @@ require_cmd fast
 require_cmd flirt
 require_cmd dcm2niix
 
+# Create a temporary workspace for intermediate files.
 mkdir -p "$OUTDIR"
 WORKDIR=$(mktemp -d "$OUTDIR/.registration_tmp.XXXXXX")
 
