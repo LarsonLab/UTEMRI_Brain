@@ -10,6 +10,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/config.sh"
 module load "$FSL_DIR"
+module load "$ANTS_DIR"
 
 usage() {
   cat <<USAGE
@@ -50,9 +51,9 @@ done
 [[ -e "$REG_REF_INPUT" ]] || { echo "Error: registration reference not found: $REG_REF_INPUT" >&2; exit 1; }
 
 require_cmd fslreorient2std
-require_cmd fast
 require_cmd flirt
 require_cmd dcm2niix
+require_cmd N4BiasFieldCorrection
 
 # Create a temporary workspace for intermediate files.
 mkdir -p "$OUTDIR"
@@ -85,33 +86,36 @@ fslreorient2std "$TE1_INPUT" "$TE1_REORIENT"
 fslreorient2std "$TE2_INPUT" "$TE2_REORIENT"
 fslreorient2std "$REG_REF_NIFTI" "$REG_REF_REORIENT"
 
-# FAST performs bias-field correction and also writes bias-field outputs.
-log "Bias-field correcting TE1"
-fast -B -b -o "$WORKDIR/te1_bfc" "$TE1_REORIENT"
-log "Bias-field correcting TE2"
-fast -B -b -o "$WORKDIR/te2_bfc" "$TE2_REORIENT"
+run_n4_bias_correction() {
+  local in_img=$1
+  local out_prefix=$2
+  local corrected_img="$WORKDIR/${out_prefix}_corrected.nii.gz"
+  local biasfield_img="$WORKDIR/${out_prefix}_biasfield.nii.gz"
 
-# FAST output names can vary by version, so normalize them to the requested names.
-for base in te1_bfc te2_bfc; do
-  if [[ -f "$WORKDIR/${base}_restore.nii.gz" ]]; then
-    mv -f "$WORKDIR/${base}_restore.nii.gz" "$OUTDIR/${base}.nii.gz"
-  elif [[ -f "$WORKDIR/${base}.nii.gz" ]]; then
-    mv -f "$WORKDIR/${base}.nii.gz" "$OUTDIR/${base}.nii.gz"
-  else
-    echo "Error: could not find restored output for $base" >&2
-    exit 1
-  fi
+  # N4 is ANTs' standard bias-field correction method. The command below
+  # keeps the behavior simple and robust, while still writing both the
+  # corrected image and the estimated bias field for downstream inspection.
+  N4BiasFieldCorrection \
+    -d 3 \
+    -i "$in_img" \
+    -o "[$corrected_img,$biasfield_img]" \
+    -s 2 \
+    -b [200] \
+    -c [50x50x30x20,0.0001] \
+    -v
 
-  if [[ -f "$WORKDIR/${base}_bias.nii.gz" ]]; then
-    mv -f "$WORKDIR/${base}_bias.nii.gz" "$OUTDIR/${base}map.nii.gz"
-  elif [[ -f "$WORKDIR/${base}_biasfield.nii.gz" ]]; then
-    mv -f "$WORKDIR/${base}_biasfield.nii.gz" "$OUTDIR/${base}map.nii.gz"
-  else
-    echo "Error: could not find bias field output for $base" >&2
-    exit 1
-  fi
+  [[ -f "$corrected_img" ]] || { echo "Error: N4 did not create $corrected_img" >&2; exit 1; }
+  [[ -f "$biasfield_img" ]] || { echo "Error: N4 did not create $biasfield_img" >&2; exit 1; }
 
-done
+  mv -f "$corrected_img" "$OUTDIR/${out_prefix}.nii.gz"
+  mv -f "$biasfield_img" "$OUTDIR/${out_prefix}map.nii.gz"
+}
+
+log "Bias-field correcting TE1 with ANTs N4"
+run_n4_bias_correction "$TE1_REORIENT" "te1_bfc"
+
+log "Bias-field correcting TE2 with ANTs N4"
+run_n4_bias_correction "$TE2_REORIENT" "te2_bfc"
 
 # Register each TE image to the reference, then register TE2 into TE1 space.
 log "Registering TE1 to registration reference"
