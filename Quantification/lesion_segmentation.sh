@@ -24,6 +24,8 @@ EOF
 module load "SCS/fsl/fsl_latest"
 module load "SCS/freesurfer/7.4.1"
 
+NCORES=${SLURM_CPUS_PER_TASK:-$(nproc)}
+
 if [[ $# -ne 4 ]]; then
   usage
   exit 1
@@ -121,7 +123,8 @@ run_samseg \
   --lesion-mask-pattern 0 1 \
   --pallidum-separate \
   --threshold 0.3 \
-  --output "$OUTDIR"
+  --output "$OUTDIR" \
+  --threads "$NCORES"
 
 SEG_MGZ="$OUTDIR/seg.mgz"
 SEG_NII="$OUTDIR/seg.nii.gz"
