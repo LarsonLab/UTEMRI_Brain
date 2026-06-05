@@ -12,7 +12,8 @@ Inputs:
   registration_ref     NIfTI file (.nii or .nii.gz)
   output_dir           Directory where outputs will be saved
 
-Outputs:
+Kept outputs:
+  flair_to_mprage.nii.gz
   mprage_to_registration_ref.nii.gz
   flair_to_mprage_to_registration_ref.nii.gz
   seg.nii.gz
@@ -37,8 +38,12 @@ REF_IN="$3"
 OUTDIR="$4"
 
 mkdir -p "$OUTDIR"
-WORKDIR="$OUTDIR/work"
-mkdir -p "$WORKDIR"
+WORKDIR="$(mktemp -d "${OUTDIR}/.work.XXXXXX")"
+
+cleanup() {
+  rm -rf "$WORKDIR"
+}
+trap cleanup EXIT
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -64,8 +69,6 @@ convert_input_to_nifti() {
   if [[ -d "$inpath" ]]; then
     local dcm_out="$WORKDIR/${tag}_dcm2niix"
     mkdir -p "$dcm_out"
-
-    # Convert the DICOM series directory to NIfTI.
     dcm2niix -z y -f "$tag" -o "$dcm_out" "$inpath" >/dev/null
 
     local converted
@@ -107,8 +110,9 @@ FLAIR_STD="$(reorient_std "$FLAIR_NII" "flair")"
 REF_STD="$(reorient_std "$REF_NII" "registration_ref")"
 
 echo "Registering FLAIR to MPRAGE..."
-FLAIR_TO_MPRAGE="$OUTDIR/flair_to_mprage_to_registration_ref_intermediate.nii.gz"
+FLAIR_TO_MPRAGE="$OUTDIR/flair_to_mprage.nii.gz"
 FLAIR_TO_MPRAGE_MAT="$OUTDIR/flair_to_mprage.mat"
+
 flirt \
   -in "$FLAIR_STD" \
   -ref "$MPRAGE_STD" \
@@ -140,6 +144,7 @@ mri_convert "$SEG_MGZ" "$SEG_NII"
 echo "Registering MPRAGE to registration_ref..."
 MPRAGE_TO_REF_MAT="$OUTDIR/mprage_to_registration_ref.mat"
 MPRAGE_TO_REF="$OUTDIR/mprage_to_registration_ref.nii.gz"
+
 flirt \
   -in "$MPRAGE_STD" \
   -ref "$REF_STD" \
@@ -172,9 +177,12 @@ LESION_MASK="$OUTDIR/lesion_mask_to_registration_ref.nii.gz"
 fslmaths "$SEG_TO_REF" -thr 99 -uthr 99 -bin "$LESION_MASK"
 
 echo "Done."
-echo "Outputs:"
+echo "Saved outputs:"
+echo "  $FLAIR_TO_MPRAGE"
 echo "  $MPRAGE_TO_REF"
 echo "  $FLAIR_TO_MPRAGE_TO_REF"
 echo "  $SEG_NII"
 echo "  $SEG_TO_REF"
 echo "  $LESION_MASK"
+echo "  $FLAIR_TO_MPRAGE_MAT"
+echo "  $MPRAGE_TO_REF_MAT"
