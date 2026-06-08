@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Generate lesion mask from MPRAGE and FLAIR images and register to a
+# reference image (registration_ref).
+#
+# Usage:
+#   ./lesion_segmentation mprage.nii flair.nii registration_ref.nii path/to/outdir
+
 usage() {
   cat <<EOF
 Usage:
