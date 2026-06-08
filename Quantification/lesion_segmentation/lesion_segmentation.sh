@@ -10,12 +10,12 @@ set -euo pipefail
 usage() {
   cat <<EOF
 Usage:
-  $(basename "$0") <mprage_in> <flair_in> <registration_ref.nii.gz> <output_dir>
+  $(basename "$0") <mprage_in> <flair_in> <registration_ref_in> <output_dir>
 
 Inputs:
   mprage_in            NIfTI file (.nii or .nii.gz) or DICOM series directory
   flair_in             NIfTI file (.nii or .nii.gz) or DICOM series directory
-  registration_ref     NIfTI file (.nii or .nii.gz)
+  registration_ref_in  NIfTI file (.nii or .nii.gz) or DICOM series directory
   output_dir           Directory where outputs will be saved
 
 Kept outputs:
@@ -61,11 +61,6 @@ require_cmd() {
 for cmd in dcm2niix fslreorient2std flirt mri_convert run_samseg fslmaths; do
   require_cmd "$cmd"
 done
-
-if [[ ! -f "$REF_IN" ]]; then
-  echo "ERROR: registration_ref must be a NIfTI file." >&2
-  exit 1
-fi
 
 convert_input_to_nifti() {
   local inpath="$1"

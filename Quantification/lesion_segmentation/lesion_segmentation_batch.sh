@@ -7,7 +7,7 @@
 # Each subject is defined by 4 consecutive non-comment lines:
 #   1. MPRAGE input: NIfTI (.nii or .nii.gz), or DICOM series directory
 #   2. FLAIR input: NIfTI (.nii or .nii.gz), or DICOM series directory
-#   3. Registration reference image: NIfTI (.nii or .nii.gz)
+#   3. Registration reference image: NIfTI (.nii or .nii.gz), or DICOM series directory
 #   4. Output directory
 #
 # Subject blocks are separated by one or more blank lines.
