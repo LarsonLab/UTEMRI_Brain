@@ -32,9 +32,9 @@ function config = base_config()
     config.recon.skip_start_te1 = 0; % number of upsampled te1 kspace points to skip at the start of each petal
     config.recon.skip_end_te1 = 0; % number of upsampeld te1 kspace points to skip at the end of each petal
     config.recon.skip_start_te2 = 0; % number of upsampled te2 kspace points to skip at the start of each petal
-    config.recon.skip_end_te2 = 0; % number of upsampeld te2 kspace points to skip at the end of each petal
-    config.recon.shift_te1 = 2*config.recon.upsample_factor; % number of upsampled te1 kspace points to shift along each petal
-    config.recon.shift_te2 = 0; % number of upsampled te2 kspace points to shift along each petal
+    config.recon.skip_end_te2 = 2; % number of upsampeld te2 kspace points to skip at the end of each petal
+    config.recon.shift_te1 = 2*config.recon.upsample_factor + 2; % number of upsampled te1 kspace points to shift along each petal
+    config.recon.shift_te2 = 2; % number of upsampled te2 kspace points to shift along each petal
 
     % Trajectory parameters
     config.recon.traj.npoints_petal = 432; % number of points per rosette petal
@@ -50,5 +50,5 @@ function config = base_config()
     config.recon.traj.skip_start_te1 = 0; % number of points in each petal to skip at start of te1 trajectory
     config.recon.traj.skip_end_te1 = 0; % number of points in each petal to skip at end of te1 trajectory
     config.recon.traj.skip_start_te2 = 0; % number of points in each petal to skip at start of te2 trajectory
-    config.recon.traj.skip_end_te2 = 0; % number of points in each petal to skip at end of te2 trajectory
+    config.recon.traj.skip_end_te2 = 1; % number of points in each petal to skip at end of te2 trajectory
 end
