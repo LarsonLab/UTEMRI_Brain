@@ -135,8 +135,8 @@ The registration and segmentation reference arguments can also be DICOM director
 ### Inputs
 - `te1`: first echo image
 - `te2`: second echo image
-- `registration_ref`: reference image used to align TE1 and TE2
-- `segmentation_ref`: reference image used to build the rescaling mask
+- `registration_ref`: reference image used to align TE1 and TE2 (currently using MP2RAGE INV2)
+- `segmentation_ref`: reference image used to build the rescaling mask (currently using MP2RAGE UNI)
 - `output_dir`: directory where all outputs will be written
 
 ### Main outputs
