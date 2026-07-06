@@ -52,3 +52,5 @@ For details on reconstruction of dual-echo UTE Rosette data, see `ImageReconstru
 Open `VFA_fitting_script.m` in MATLAB and follow through the code to run and generate fitted brain uT2 parameter maps. 
 
 Approximate computation time on a 32-core CPU takes 1-1.5 hours
+
+Additional Sample data for this is available at:  https://zenodo.org/records/21228160
